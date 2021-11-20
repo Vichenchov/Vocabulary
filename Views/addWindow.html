@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
+    </script>
+    <link rel="stylesheet" type="text/css" href="../Styles/styles.css">
+    <title>Learn English</title>
+</head>
+<title>Add Shoping List Item</title>
+
+<body>
+    <div>
+        <h1>Enter New Word and It's Meaning</h1>
+        <label>New Word:</label>
+        <input type="text" id="word" autofocus><br>
+        <label>Meaning:</label>
+        <input type="text" id="meaning" autofocus><br>
+    </div>
+
+    <button class="play" id="" type="submit">Save and Play</button><br>
+    <button class="saveWord" id="" type="submit">Save and add another word</button><br>
+    <button class="exit" id="" type="submit">Save and Quit</button><br>
+    <button class="goBack">Go back -></button>
+    <button class="str">START PAGE</button>
+
+
+    <script>
+        const electron = require('electron');
+        const {
+            ipcRenderer
+        } = electron;
+
+        // onClick .exit do exit()
+        document
+            .querySelector('.exit')
+            .addEventListener('click', exit);
+
+        //Saves the current word and exits the game
+        function exit(e) {
+            ifExit = true;
+            saveWord(e, ifExit, '');
+        }
+
+        //onClick .play do goToChooseGame()
+        document
+            .querySelector('.play')
+            .addEventListener('click', goToChooseGame);
+
+        //Saves the current word and redirects to chooseGame.html to choose game setting and start playing    
+        function goToChooseGame(e) {
+            saveWord(e, false, 'Views/chooseGame.html');
+        }
+
+        //onClick .saveWord do saveWordAndAddMore
+        document
+            .querySelector('.saveWord')
+            .addEventListener('click', saveWordAndAddMore);
+
+        //Saves the current word and saty in the same page that the user can add another word
+        function saveWordAndAddMore(e) {
+            saveWord(e, false, '');
+        }
+
+        //Save the current word
+        //Three params 
+        //(e) is the event 
+        //(ifExit) gets boolean if the app should cloes after the word was saved
+        //(url) gets a url if the user wants to play after the word was saved, and redirects him to the game settings page
+        function saveWord(e, ifExit, url) {
+            // e.preventDefault();
+            const newWordInsert = {
+                word: document
+                    .querySelector('#word')
+                    .value,
+                meaning: document
+                    .querySelector('#meaning')
+                    .value
+            }
+            document.querySelector('#word').value = '';
+            document.querySelector('#meaning').value = '';
+            ipcRenderer.send('addNewWord', newWordInsert, ifExit,
+                url);
+        }
+
+        //Goes back to the main window
+        document
+            .querySelector('.goBack')
+            .addEventListener('click', (e) => {
+                ipcRenderer.send('goToPage', 'Views/mainWindow.html');
+            });
+
+        document
+            .querySelector('.str')
+            .addEventListener('click', str);
+
+        function str(e) {
+            ipcRenderer.send('goToPage', 'Views/mainWindow.html');
+        }
+        document
+            .querySelector('.str')
+            .addEventListener('click', str);
+
+        function str(e) {
+            ipcRenderer.send('goToPage', 'Views/mainWindow.html');
+        }
+
+        ipcRenderer.on('notIserted', function (e) {
+            const newlabel = document.createElement('label');
+            const t = document.createTextNode('Insert new word...');
+            newlabel.appendChild(t);
+            document.querySelector('div').appendChild(newlabel);
+        })
+    </script>
+
+</body>
+
+</html>

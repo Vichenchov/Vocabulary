@@ -1,0 +1,21 @@
+{
+  "name": "learnenglishwords",
+  "version": "1.0.0",
+  "description": "Learn new words by memorization",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Max Viventsov",
+  "license": "MIT",
+  "dependencies": {
+    "ejs": "^3.1.6",
+    "ejs-electron": "^2.1.1",
+    "electron": "^15.3.0",
+    "electron-reload": "^2.0.0-alpha.1",
+    "express": "^4.17.1",
+    "lodash": "^4.17.21",
+    "mongodb": "^4.1.4",
+    "mongoose": "^6.0.12"
+  }
+}

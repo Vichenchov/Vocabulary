@@ -82,6 +82,7 @@
             }
             document.querySelector('#word').value = '';
             document.querySelector('#meaning').value = '';
+            console.log(newWordInsert);
             ipcRenderer.send('addNewWord', newWordInsert, ifExit,
                 url);
         }
@@ -111,6 +112,13 @@
         ipcRenderer.on('notIserted', function (e) {
             const newlabel = document.createElement('label');
             const t = document.createTextNode('Insert new word...');
+            newlabel.appendChild(t);
+            document.querySelector('div').appendChild(newlabel);
+        })
+
+        ipcRenderer.on('alreadyExist', function (e) {
+            const newlabel = document.createElement('label');
+            const t = document.createTextNode('Word already exists...');
             newlabel.appendChild(t);
             document.querySelector('div').appendChild(newlabel);
         })

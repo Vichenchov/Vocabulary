@@ -7,10 +7,16 @@ const {
     randomWords,
     ifEnoughWords,
     killGameInstance,
-    checkEtH
+    checkEtH,
+    checkHtE,
+    ifWordExists,
+    ifDeleteGameWord,
+    ifGameDbIsEmpty,
+    checkWriting
 } = require('./db');
 require('electron-reload')(__dirname);
 const _ = require('lodash');
+
 
 
 //objects that we pass in form electron that we can use it on this page
@@ -122,12 +128,25 @@ async function pickAmount(amount) {
 ipcMain.on('addNewWord', async function (e, newWordInsert, ifExit, pagePath) {
     //newWordInsert is an obj with two fileds, word & meaning
     //newInsert is an obj with the info we need to insert it to the DB
-
     const newInsert = {
         word: newWordInsert.word,
         meaning: newWordInsert.meaning,
         ifLearned: false
     }
+
+    console.log(newInsert);
+
+    var count = await ifWordExists(newInsert.word).then(ans => {
+        return ans;
+    })
+
+    // checks if a word already exists
+    if (count > 0) {
+        mainWindow.webContents.send('alreadyExist');
+        return;
+    }
+
+    // checks if the fileds are not empty
     if (newWordInsert.word != '' && newWordInsert.meaning != '') {
         //insert method from db module
         await addWord(newInsert);
@@ -151,18 +170,23 @@ ipcMain.on('deleteWords', async function (wordsArr) {
 
 
 
-// ===>>> test function -> works on delete button click <<<===
+//* ===>>> test function -> works on delete button click <<<===
+//* ===>>> test function -> works on delete button click <<<===
+//* ===>>> test function -> works on delete button click <<<===
 
 
 ipcMain.on('test', async function (e) {
-    await checkEtH('ttt',true).catch(()=>{
-        console.log(err);
+    console.log("main");
+    await ifDeleteGameWord('b').then((ans) => {
+        console.log(ans);
     });
+
 })
 
 
-// ===>>> test function -> works on delete button click <<<===
-
+//* ===>>> test function -> works on delete button click <<<===
+//* ===>>> test function -> works on delete button click <<<===
+//* ===>>> test function -> works on delete button click <<<===
 
 // This is just an array that will repesent the main Menu Sometime we don't want
 // to use the main Menu so we can build one as we like or remove it

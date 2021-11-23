@@ -18,6 +18,7 @@
     <button class="delete">Delete word</button><br>
     <button class="exit">Exit</button>
 
+
     <script>
         const electron = require('electron');
         const {
@@ -54,10 +55,10 @@
             .querySelector('.delete')
             .addEventListener('click', test);
 
-            function test(e) {
-                ipcRenderer.send('test');
-            }
-
+        function test(e) {
+            console.log("clicked");
+            ipcRenderer.send('test');
+        }
     </script>
 </body>
 

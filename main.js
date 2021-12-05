@@ -258,7 +258,7 @@ ipcMain.on('exit',async function (e) {
 
 //Gose to any window - the function gets the specific path and change the window to specific html page (not opens a new window!)
 //if goes to the game page after
-// IF GOES WRONG BRANCH
+
 ipcMain.on('goToPage', async function (e, pagePath, amount) {
     // if the user starts to play then...
     if (pagePath == 'Views/gameWindow.html') {

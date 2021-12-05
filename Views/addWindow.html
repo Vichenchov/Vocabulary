@@ -19,6 +19,8 @@
         <input type="text" id="word" autofocus><br>
         <label>Meaning:</label>
         <input type="text" id="meaning" autofocus><br>
+        <label for="" class="hide empty">Insert new word...</label>
+        <label for="" class="hide exists">Word already exists...</label>
     </div>
 
     <button class="play" id="" type="submit">Save and Play</button><br>
@@ -110,17 +112,13 @@
         }
 
         ipcRenderer.on('notIserted', function (e) {
-            const newlabel = document.createElement('label');
-            const t = document.createTextNode('Insert new word...');
-            newlabel.appendChild(t);
-            document.querySelector('div').appendChild(newlabel);
+            document.querySelector('.exists').classList.add('hide');
+            document.querySelector('.empty').classList.remove('hide');
         })
 
         ipcRenderer.on('alreadyExist', function (e) {
-            const newlabel = document.createElement('label');
-            const t = document.createTextNode('Word already exists...');
-            newlabel.appendChild(t);
-            document.querySelector('div').appendChild(newlabel);
+            document.querySelector('.empty').classList.add('hide');
+            document.querySelector('.exists').classList.remove('hide');
         })
     </script>
 

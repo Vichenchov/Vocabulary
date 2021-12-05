@@ -16,6 +16,7 @@
     <button class="play">Play</button><br>
     <button class="add">Add New Word</button>
     <button class="delete">Delete word</button><br>
+    <button class="stats">Show words stats</button>
     <button class="exit">Exit</button>
 
 
@@ -50,13 +51,26 @@
             ipcRenderer.send('goToPage', 'Views/chooseGame.html');
         }
 
+
+        document
+            .querySelector('.stats')
+            .addEventListener('click', stats);
+
+        function stats(e) {
+            ipcRenderer.send('goToPage', 'Views/stats.html');
+        }
+
         // ===>>> test function -> works on delete button click <<<===
+        // ===>>> test function -> works on delete button click <<<===
+        // ===>>> test function -> works on delete button click <<<===
+        // ===>>> test function -> works on delete button click <<<===
+        // ===>>> test function -> works on delete button click <<<===
+        
         document
             .querySelector('.delete')
             .addEventListener('click', test);
 
         function test(e) {
-            console.log("clicked");
             ipcRenderer.send('test');
         }
     </script>

@@ -14,15 +14,17 @@
         <title>Document</title>
     </head>
     <body>
-        <label for="">Word will disply here</label>
-
+        <label for="">Word will disply here</label><br>
+        
         <ul>
             <li>word 1</li>
             <li>word 2</li>
             <li>word 3</li>
             <li>word 4</li>
         </ul>
+        
 
+        <button class="goBack">choose game page (go back)</button>
         <button class="str">START PAGE</button>
         <button class="exit">Exit Game</button>
     </body>
@@ -45,5 +47,22 @@
         function str(e) {
             ipcRenderer.send('goToPage', 'Views/mainWindow.html');
         }
+
+
+        document
+        .querySelector('.goBack')
+        .addEventListener('click', goBack);
+
+        function goBack(e) {
+            ipcRenderer.send('goBack');
+        }
+
+        ipcRenderer.on('currentPracticeCount', function (e,count) {
+            const newlabel = document.createElement('label');
+            //Current amount of Leaned words is
+            const t = document.createTextNode(' +++ Current practice amount: ' + count);
+            newlabel.appendChild(t);
+            document.querySelector('label').appendChild(newlabel);
+        })
         </script>
 </html>

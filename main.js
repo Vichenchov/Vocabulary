@@ -12,10 +12,27 @@ const {
     ifWordExists,
     ifDeleteGameWord,
     ifGameDbIsEmpty,
-    checkWriting
+    checkWriting,
+    moveUnlearnedWords,
+    ifContaintUnlearned,
+    gameInstanceFromChoosenWords,
+    countWords,
+    getUnlearned,
+    getLearned,
+    countGame,
+    deleteWordsFromGame,
+    getXwordsFromWords,
+    getXwordsFromGame,
+    differ,
+    killUnplayed,
+    getXwordsFromUnplayed
 } = require('./db');
 require('electron-reload')(__dirname);
 const _ = require('lodash');
+const {
+    capitalizeFirstLetter
+} = require('./extensions');
+var AutoLaunch = require('auto-launch');
 
 
 
@@ -24,7 +41,8 @@ const {
     app,
     BrowserWindow,
     Menu,
-    ipcMain
+    ipcMain,
+    globalShortcut
 } = electron;
 //SET ENV - PROD - this line setes the project as ready to production and by that removes the DevTools from the Menu bar
 // process.env.NODE_ENV = 'production';
@@ -32,11 +50,19 @@ const {
 
 let mainWindow;
 
+// app.whenReady().then(() => {
+//     globalShortcut.register('CommandOrControl+X', () => {
+//         creatWindow();
+//         mainWindow.loadURL(url.format({
+//             pathname: path.join(__dirname, 'Views/addWindow.html'),
+//             protocol: 'file:',
+//             slashes: true
+//         }))
+//     })
+//   })
 
-//Listen to app to bee ready
-app.on('ready', function () {
 
-    //Create new window
+function creatWindow() {
     mainWindow = new BrowserWindow({
         // idk what webPreferences do but it make it work so I need to add it to any new
         // page
@@ -47,6 +73,11 @@ app.on('ready', function () {
 
         }
     });
+}
+
+//Listen to app to bee ready
+app.on('ready', function () {
+    creatWindow();
 
     // Load html into window
     mainWindow.loadURL(url.format({
@@ -57,8 +88,13 @@ app.on('ready', function () {
         // we want it to go to the path is: 'file://dirname/Views/mainWindow.html'
     }))
 
+    // show amount of words in the db when mainWindow loaded
+    mainWindow.once('ready-to-show', () => showCount())
+
+
     // Quit app when closed - closes all windows
-    mainWindow.on('closed', function () {
+    mainWindow.on('closed', async function (e) {
+        await killUnplayed();
         killGameInstance().then(() => {
             app.quit();
         });
@@ -70,14 +106,152 @@ app.on('ready', function () {
     Menu.setApplicationMenu(mainMenu);
 })
 
+
 //=================================================================================
 
+//* ===>>> test function -> works on delete button click <<<===
+//* ===>>> test function -> works on delete button click <<<===
+//* ===>>> test function -> works on delete button click <<<===
+
+
+ipcMain.on('test', async function (e) {
+    var ans = await shuffleWords().then((res)=>{
+        return res;
+    });
+    console.log(ans);
+})
+
+
+//* ===>>> test function -> works on delete button click <<<===
+//* ===>>> test function -> works on delete button click <<<===cd
+//* ===>>> test function -> works on delete button click <<<===
+
+// Practice main function + runs when select buttons clicked (didn't create yet...)
+ipcMain.on('practice', function () {
+
+    // shuffleWords() => פעולה שבוחרת 4 מילים מהדי בי משחק ומחזירה אותן
+    //  מהלך המחשק - מתוך הפעולה הזו תבחר מילה אחת מהדי בי משחק - המשך שורה למטה
+    // את המילה הזו אנחנו נראה המילה שצריך לענות עלייה - אבל נראה גם את המילה וגם את הפירוש - אחד מהם בשאלה ואחת בתשובות - המשך שורה למטה
+    // ואת שאר התשובות נבחר רנדומאלית מ3 המילים האחרות שקיבלנו !!! - לשים לב שהפעולה שמחזירה את 4 המילים מחזירה את האובייקט של המילה ולא רק את המילה 
+    // בנוסף לשים לב שהמילה שמנחשים היא אחת המילים שהגיעו מהדי בי משחק - לעשות פשוט ראנדום לאחת המילים שקיבלנו מהדי בי משחק
+
+
+    // * הפעולה מתחת גורמת לכך שמספר המילים בדי בי משחק יתעדכן
+    // * חשוב שיהיה את טעינת העמוד אחרי הקריאה לפעולה שמביאה את כמות המילים 
+    // * חשוב שכל זה יבוא אחרי שמחקו/הוסיפו מילה מהדי בי משחק
+    // mainWindow.once('ready-to-show', () => showPracticeAmount());
+    // mainWindow.loadURL(url.format({
+    //     pathname: path.join(__dirname, 'Views/gameWindow.html'),
+    //     protocol: 'file:',
+    //     slashes: true
+    // }))
+
+})
+
+// getting random words to show while practicing - always return an array with 4 words obj
+async function shuffleWords() {
+    // gets the amount of words in the game db
+    var count = await countGame().then((amount) => {
+        return amount;
+    })
+    // I relay on the amount of words in the game db, the amount of words in the corrent practice
+    // if there's 4 or more, return all of theme, one for learning + the same one + 3 more for the answers
+    // if there's 3, return all of theme and one more from the word db, one for learning + and the same one + 2 from db game + one from words game for the answers
+    // ...
+    // if i won't do this, when there's less then 4 words, I'll get only 3 answers or less, so I'm "getting help" from the words db
+    switch (count) {
+        case 3:
+            var wordsFromGame = await getXwordsFromGame(3).then((res) => {
+                return res;
+            });
+            var wordsFromWords = await getXwordsFromUnplayed(1).then((res) => {
+                return res;
+            });
+            var results = await differWords(wordsFromGame,wordsFromWords).then((res) =>{
+                return res;
+            }).catch(() =>{
+                return wordsFromGame.concat(wordsFromWords);
+            })
+            return results;
+            break;
+
+        case 2:
+            var wordsFromGame = await getXwordsFromGame(2).then((res) => {
+                return res;
+            });
+            var wordsFromWords = await getXwordsFromUnplayed(2).then((res) => {
+                return res;
+            });
+            var results = await differWords(wordsFromGame,wordsFromWords).then((res) =>{
+                return res;
+            })
+            .catch(() =>{
+                return wordsFromGame.concat(wordsFromWords);
+            })
+            return results;
+            break;
+
+        case 1:
+            var wordsFromGame = await getXwordsFromGame(1).then((res) => {
+                return res;
+            });
+            var wordsFromWords = await getXwordsFromUnplayed(3).then((res) => {
+                return res;
+            });
+            var results = await differWords(wordsFromGame,wordsFromWords).then((res) =>{
+                return res;
+            }).catch(() =>{
+                return wordsFromGame.concat(wordsFromWords);
+            })
+            return results;
+            break;
+
+        default:
+            var wordsFromGame = await getXwordsFromGame(4).then((res) => {
+                return res;
+            })
+            return wordsFromGame;
+            break;
+    }
+}
+
+//check that we won't get the same words from the game db and the Unplayed db 
+//so the answers always won't be the same
+async function differWords(game, words) {
+    for (let i = 0; i < game.length ; i++) {
+        const wordFromGame = game[i];
+        for (let y = 0; y < words.length ; y++) {
+            const wordFromWords = words[y];
+            if (wordFromGame.word == wordFromWords.word) {
+                words.shift(wordFromWords);
+                await getXwordsFromGame(1).then((newWord) =>{
+                    words.push(newWord[0]);
+                    y--;
+                });
+            }
+        }
+    }
+    return game.concat(words);
+}
+
+ipcMain.on('goBack',async function () {
+    await killUnplayed().then(() =>{
+        killGameInstance();
+    });
+    mainWindow.loadURL(url.format({
+        pathname: path.join(__dirname,'Views/chooseGame.html'),
+        protocol: 'file:',
+        slashes: true
+    }))
+})
+
+
 //Exit game when exit buttons clicked 
-ipcMain.on('exit', function (e) {
+ipcMain.on('exit',async function (e) {
+    await killUnplayed();
     // empty the game db
     killGameInstance().then(() => {
         app.quit();
-        mainWindow.close();
     });
 
 })
@@ -92,22 +266,37 @@ ipcMain.on('goToPage', async function (e, pagePath, amount) {
         var newAmount = await pickAmount(amount).then(value => {
             return value;
         });
-        // If the user inserted amount the bigger then the amount of words in the db...
-        if (newAmount < amount) {
-            //Shows a message to the user about the amount of words he iserted
+        // If the user inserted amount that bigger then the amount of words in the db...
+        if (newAmount < amount || newAmount == 0) {
+            //Shows a message to the user about the amount of words he isertedcd
             mainWindow.webContents.send('data', newAmount);
             return;
         } else {
             // creats an instance of words for the current practice
-            randomWords(newAmount);
+            await randomWords(newAmount);
+            mainWindow.once('ready-to-show', () => showPracticeAmount());
         }
     }
+    //nevigate to the stats page and run the showCount command
+    if (pagePath == 'Views/stats.html') {
+        mainWindow.once('ready-to-show', () => showCount())
+    }
+
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, pagePath),
         protocol: 'file:',
         slashes: true
     }))
 })
+
+// displays the amount of words in the current practice => current amount of words in the game db
+async function showPracticeAmount(params) {
+    var count = await countGame().then((res) => {
+        return res;
+    });
+    console.log(count + " words in game db...");
+    mainWindow.webContents.send('currentPracticeCount', count);
+}
 
 // checks if there is enough words in the db as the user inserts
 // if not, returns the number of the words in the db
@@ -129,7 +318,7 @@ ipcMain.on('addNewWord', async function (e, newWordInsert, ifExit, pagePath) {
     //newWordInsert is an obj with two fileds, word & meaning
     //newInsert is an obj with the info we need to insert it to the DB
     const newInsert = {
-        word: newWordInsert.word,
+        word: capitalizeFirstLetter(newWordInsert.word),
         meaning: newWordInsert.meaning,
         ifLearned: false
     }
@@ -159,7 +348,13 @@ ipcMain.on('addNewWord', async function (e, newWordInsert, ifExit, pagePath) {
         }))
     }
     //Checks if the exit button is clicked
-    if (ifExit == true) app.quit();
+    if (ifExit == true) {
+        await killUnplayed();
+        // empty the game db and quit app
+        killGameInstance().then(() => {
+            app.quit();
+        })
+    }
     mainWindow.webContents.send('notIserted');
 })
 
@@ -168,25 +363,42 @@ ipcMain.on('deleteWords', async function (wordsArr) {
     await deleteWords(wordsArr);
 })
 
-
-
-//* ===>>> test function -> works on delete button click <<<===
-//* ===>>> test function -> works on delete button click <<<===
-//* ===>>> test function -> works on delete button click <<<===
-
-
-ipcMain.on('test', async function (e) {
-    console.log("main");
-    await ifDeleteGameWord('b').then((ans) => {
-        console.log(ans);
-    });
-
+// move unlearned word to game db and nevigate to the game page
+ipcMain.on('unLearned', async function () {
+    if (await ifContaintUnlearned()) {
+        await moveUnlearnedWords().then(() => {
+            mainWindow.loadURL(url.format({
+                pathname: path.join(__dirname, 'Views/gameWindow.html'),
+                protocol: 'file:',
+                slashes: true
+            }))
+        });
+    } else {
+        mainWindow.webContents.send('noUnlearned');
+    }
 })
 
+// shows the amount of words,unlearnd words and learned words in the db in mainWindow
+async function showCount() {
+    count = await countWords().then(count => {
+        console.log(count);
+        return count;
+    })
+    unlearned = await getUnlearned().then(count => {
+        console.log(count);
 
-//* ===>>> test function -> works on delete button click <<<===
-//* ===>>> test function -> works on delete button click <<<===
-//* ===>>> test function -> works on delete button click <<<===
+        return count;
+    })
+    learned = await getLearned().then(count => {
+        console.log(count);
+
+        return count;
+    })
+
+    mainWindow.webContents.send('countWords', count);
+    mainWindow.webContents.send('countLearned', learned);
+    mainWindow.webContents.send('countUnlearned', unlearned);
+}
 
 // This is just an array that will repesent the main Menu Sometime we don't want
 // to use the main Menu so we can build one as we like or remove it

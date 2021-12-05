@@ -6,3 +6,11 @@ body{
 .exit{
     margin-top: 5%;
 }
+
+.hide{
+    display: none;
+}
+
+.show{
+    display: block;
+}

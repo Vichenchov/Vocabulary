@@ -25,6 +25,8 @@
             ipcRenderer
         } = electron;
 
+
+        
         ipcRenderer.on('countWords', function (e,count) {
             const newlabel = document.createElement('label');
             // Current amount of words is

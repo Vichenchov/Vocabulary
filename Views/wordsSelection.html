@@ -87,6 +87,7 @@
 </head>
 
 <body>
+
   <label for="">Choose words:</label>
   <input type="text"><br>
   <div class="tg-wrap">
@@ -99,11 +100,12 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td class="tg-q4pq">שדזכגדגשכ</td>
-          <td class="tg-j0tj">asdfasd</td>
-          <td class="tg-j0tj"></td>
+        <tr class="item">
+          <td class="">שדזכגדגשכ</td>
+          <td class="">asdfasd</td>
+          <td class=""></td>
         </tr>
+
         <button class="str">START PAGE</button>
         <script>
           const electron = require('electron');
@@ -111,11 +113,19 @@
             ipcRenderer
           } = electron;
 
-          document.addEventListener('DOMContentLoaded', pageLoaded);
-
-          function pageLoaded() {
-            
-          }
+          ipcRenderer.on('loadWords', function (e, words) {
+            words.forEach(element => {
+              const word = document.createElement('td');
+              const meaning = document.createElement('td');
+              const wordVal = document.createTextNode(element.word);
+              const meaningVal = document.createTextNode(element.meaning);
+              word.appendChild(wordVal);
+              meaning.appendChild(meaningVal);
+              document.querySelector('tr').appendChild(word);
+              document.querySelector('tr').appendChild(meaning);
+              document.querySelector('tr').appendChild('<input type="radio">');
+            });
+          });
 
           document
             .querySelector('.str')

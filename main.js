@@ -25,7 +25,8 @@ const {
     getXwordsFromGame,
     differ,
     killUnplayed,
-    getXwordsFromUnplayed
+    getXwordsFromUnplayed,
+    getAllWords
 } = require('./db');
 require('electron-reload')(__dirname);
 const _ = require('lodash');
@@ -33,6 +34,9 @@ const {
     capitalizeFirstLetter
 } = require('./extensions');
 var AutoLaunch = require('auto-launch');
+const {
+    mean
+} = require('lodash');
 
 
 
@@ -115,10 +119,12 @@ app.on('ready', function () {
 
 
 ipcMain.on('test', async function (e) {
-    var ans = await shuffleWords().then((res)=>{
-        return res;
-    });
-    console.log(ans);
+    await loadWordsToChooswWords();
+    // var ans = await shuffleWords().then((res) => {
+    //     return res;
+    // });
+    // console.log(ans);
+
 })
 
 
@@ -167,9 +173,9 @@ async function shuffleWords() {
             var wordsFromWords = await getXwordsFromUnplayed(1).then((res) => {
                 return res;
             });
-            var results = await differWords(wordsFromGame,wordsFromWords).then((res) =>{
+            var results = await differWords(wordsFromGame, wordsFromWords).then((res) => {
                 return res;
-            }).catch(() =>{
+            }).catch(() => {
                 return wordsFromGame.concat(wordsFromWords);
             })
             return results;
@@ -182,12 +188,12 @@ async function shuffleWords() {
             var wordsFromWords = await getXwordsFromUnplayed(2).then((res) => {
                 return res;
             });
-            var results = await differWords(wordsFromGame,wordsFromWords).then((res) =>{
-                return res;
-            })
-            .catch(() =>{
-                return wordsFromGame.concat(wordsFromWords);
-            })
+            var results = await differWords(wordsFromGame, wordsFromWords).then((res) => {
+                    return res;
+                })
+                .catch(() => {
+                    return wordsFromGame.concat(wordsFromWords);
+                })
             return results;
             break;
 
@@ -198,9 +204,9 @@ async function shuffleWords() {
             var wordsFromWords = await getXwordsFromUnplayed(3).then((res) => {
                 return res;
             });
-            var results = await differWords(wordsFromGame,wordsFromWords).then((res) =>{
+            var results = await differWords(wordsFromGame, wordsFromWords).then((res) => {
                 return res;
-            }).catch(() =>{
+            }).catch(() => {
                 return wordsFromGame.concat(wordsFromWords);
             })
             return results;
@@ -218,13 +224,13 @@ async function shuffleWords() {
 //check that we won't get the same words from the game db and the Unplayed db 
 //so the answers always won't be the same
 async function differWords(game, words) {
-    for (let i = 0; i < game.length ; i++) {
+    for (let i = 0; i < game.length; i++) {
         const wordFromGame = game[i];
-        for (let y = 0; y < words.length ; y++) {
+        for (let y = 0; y < words.length; y++) {
             const wordFromWords = words[y];
             if (wordFromGame.word == wordFromWords.word) {
                 words.shift(wordFromWords);
-                await getXwordsFromGame(1).then((newWord) =>{
+                await getXwordsFromGame(1).then((newWord) => {
                     words.push(newWord[0]);
                     y--;
                 });
@@ -234,12 +240,12 @@ async function differWords(game, words) {
     return game.concat(words);
 }
 
-ipcMain.on('goBack',async function () {
-    await killUnplayed().then(() =>{
+ipcMain.on('goBack', async function () {
+    await killUnplayed().then(() => {
         killGameInstance();
     });
     mainWindow.loadURL(url.format({
-        pathname: path.join(__dirname,'Views/chooseGame.html'),
+        pathname: path.join(__dirname, 'Views/chooseGame.html'),
         protocol: 'file:',
         slashes: true
     }))
@@ -247,7 +253,7 @@ ipcMain.on('goBack',async function () {
 
 
 //Exit game when exit buttons clicked 
-ipcMain.on('exit',async function (e) {
+ipcMain.on('exit', async function (e) {
     await killUnplayed();
     // empty the game db
     killGameInstance().then(() => {
@@ -258,28 +264,32 @@ ipcMain.on('exit',async function (e) {
 
 //Gose to any window - the function gets the specific path and change the window to specific html page (not opens a new window!)
 //if goes to the game page after
-
 ipcMain.on('goToPage', async function (e, pagePath, amount) {
-    // if the user starts to play then...
-    if (pagePath == 'Views/gameWindow.html') {
-        // gets the number of words for the current practice 
-        var newAmount = await pickAmount(amount).then(value => {
-            return value;
-        });
-        // If the user inserted amount that bigger then the amount of words in the db...
-        if (newAmount < amount || newAmount == 0) {
-            //Shows a message to the user about the amount of words he isertedcd
-            mainWindow.webContents.send('data', newAmount);
-            return;
-        } else {
-            // creats an instance of words for the current practice
-            await randomWords(newAmount);
-            mainWindow.once('ready-to-show', () => showPracticeAmount());
-        }
-    }
-    //nevigate to the stats page and run the showCount command
-    if (pagePath == 'Views/stats.html') {
-        mainWindow.once('ready-to-show', () => showCount())
+    switch (pagePath) {
+        case 'Views/gameWindow.html':
+            // gets the number of words for the current practice 
+            var newAmount = await pickAmount(amount).then(value => {
+                return value;
+            });
+            // If the user inserted amount that bigger then the amount of words in the db...
+            if (newAmount < amount || newAmount == 0) {
+                //Shows a message to the user about the amount of words he isertedcd
+                mainWindow.webContents.send('data', newAmount);
+                return;
+            } else {
+                // creats an instance of words for the current practice
+                await randomWords(newAmount);
+                mainWindow.once('ready-to-show', () => showPracticeAmount());
+            }
+            break;
+        case 'Views/stats.html':
+            mainWindow.once('ready-to-show', () => showCount());
+            break;
+            case 'Views/deleteWords.html':
+                mainWindow.once('ready-to-show', () => loadWordsToDeleteWords());
+                break;
+        default:
+            break;
     }
 
     mainWindow.loadURL(url.format({
@@ -288,6 +298,34 @@ ipcMain.on('goToPage', async function (e, pagePath, amount) {
         slashes: true
     }))
 })
+
+// !=================================================================================
+// !=================================================================================
+// !=================================================================================
+// !=================================================================================
+
+// מציג את המידע של המילים בעמוד מחיקת מילים
+// לקחת את זה ולכתוב פעולה אחת שמציגה את המילים בכל העמודים שצריך את זה
+// ואז לכתוב סיכום לפעולה
+async function loadWordsToDeleteWords() {
+    var words = await getAllWords().then((res) => {
+        return res;
+    });
+
+    for (let i = 0; i < words.length; i++) {
+        var word = words[i].word;
+        var meaning = words[i].meaning;
+        console.log(word);
+        console.log(meaning);
+        mainWindow.webContents.send('loadWords', word, meaning);
+    }
+}
+
+// !=================================================================================
+// !=================================================================================
+// !=================================================================================
+// !=================================================================================
+
 
 // displays the amount of words in the current practice => current amount of words in the game db
 async function showPracticeAmount(params) {

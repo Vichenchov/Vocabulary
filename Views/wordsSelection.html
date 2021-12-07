@@ -101,9 +101,7 @@
       </thead>
       <tbody>
         <tr class="item">
-          <td class="">שדזכגדגשכ</td>
-          <td class="">asdfasd</td>
-          <td class=""></td>
+
         </tr>
 
         <button class="str">START PAGE</button>
@@ -113,18 +111,19 @@
             ipcRenderer
           } = electron;
 
-          ipcRenderer.on('loadWords', function (e, words) {
-            words.forEach(element => {
-              const word = document.createElement('td');
-              const meaning = document.createElement('td');
-              const wordVal = document.createTextNode(element.word);
-              const meaningVal = document.createTextNode(element.meaning);
-              word.appendChild(wordVal);
-              meaning.appendChild(meaningVal);
-              document.querySelector('tr').appendChild(word);
-              document.querySelector('tr').appendChild(meaning);
-              document.querySelector('tr').appendChild('<input type="radio">');
-            });
+          ipcRenderer.on('loadWords', function (e, word, meaning) {
+            const newWord = document.createElement('labal');
+            const wordVal = document.createTextNode(word);
+            newWord.appendChild(wordVal);
+            document.querySelector('.item').appendChild(newWord);
+            const newMeaning = document.createElement('labal');
+            const meaningVal = document.createTextNode(meaning);
+            newMeaning.appendChild(meaningVal);
+            document.querySelector('.item').appendChild(newMeaning);
+            var radiobox = document.createElement('input');
+            radiobox.classList.add('radio');
+            radiobox.type = 'radio';
+            document.querySelector('.item').appendChild(radiobox);
           });
 
           document

@@ -288,6 +288,9 @@ ipcMain.on('goToPage', async function (e, pagePath, amount) {
             case 'Views/deleteWords.html':
                 mainWindow.once('ready-to-show', () => loadWordsToDeleteWords());
                 break;
+            case 'Views/wordsSelection.html':
+                mainWindow.once('ready-to-show', () => loadWordsToDeleteWords());
+                break;
         default:
             break;
     }
@@ -312,12 +315,14 @@ async function loadWordsToDeleteWords() {
         return res;
     });
 
+    console.log(words);
     for (let i = 0; i < words.length; i++) {
         var word = words[i].word;
         var meaning = words[i].meaning;
         console.log(word);
         console.log(meaning);
-        mainWindow.webContents.send('loadWords', word, meaning);
+        console.log(i+1);
+        mainWindow.webContents.send('loadWords', word, meaning, i+1);
     }
 }
 

@@ -31,7 +31,7 @@ const {
 require('electron-reload')(__dirname);
 const _ = require('lodash');
 const {
-    capitalizeFirstLetter
+    formatWord
 } = require('./extensions');
 var AutoLaunch = require('auto-launch');
 const {
@@ -361,7 +361,7 @@ ipcMain.on('addNewWord', async function (e, newWordInsert, ifExit, pagePath) {
     //newWordInsert is an obj with two fileds, word & meaning
     //newInsert is an obj with the info we need to insert it to the DB
     const newInsert = {
-        word: capitalizeFirstLetter(newWordInsert.word),
+        word: formatWord(newWordInsert.word),
         meaning: newWordInsert.meaning,
         ifLearned: false
     }

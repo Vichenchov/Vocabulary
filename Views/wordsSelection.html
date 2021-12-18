@@ -8,135 +8,102 @@
     integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
   </script>
   <link rel="stylesheet" type="text/css" href="../Styles/styles.css">
-  <style type="text/css">
-    .tg {
-      border: none;
-      border-collapse: collapse;
-      border-color: #aabcfe;
-      border-spacing: 0;
-    }
-
-    .tg td {
-      background-color: #e8edff;
-      border-color: #aabcfe;
-      border-style: solid;
-      border-width: 0px;
-      color: #669;
-      font-family: Arial, sans-serif;
-      font-size: 14px;
-      overflow: hidden;
-      padding: 10px 5px;
-      word-break: normal;
-    }
-
-    .tg th {
-      background-color: #b9c9fe;
-      border-color: #aabcfe;
-      border-style: solid;
-      border-width: 0px;
-      color: #039;
-      font-family: Arial, sans-serif;
-      font-size: 14px;
-      font-weight: normal;
-      overflow: hidden;
-      padding: 10px 5px;
-      word-break: normal;
-    }
-
-    .tg .tg-baqh {
-      text-align: center;
-      vertical-align: top
-    }
-
-    .tg .tg-p6v9 {
-      border-color: #343434;
-      text-align: center;
-      vertical-align: top
-    }
-
-    .tg .tg-q4pq {
-      background-color: #D2E4FC;
-      border-color: inherit;
-      font-size: 16px;
-      text-align: center;
-      vertical-align: top
-    }
-
-    .tg .tg-j0tj {
-      background-color: #D2E4FC;
-      text-align: center;
-      vertical-align: top
-    }
-
-    @media screen and (max-width: 767px) {
-      .tg {
-        width: auto !important;
-      }
-
-      .tg col {
-        width: auto !important;
-      }
-
-      .tg-wrap {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-      }
-    }
-  </style>
   <title>Learn English</title>
 </head>
 
 <body>
-
-  <label for="">Choose words:</label>
-  <input type="text"><br>
-  <div class="tg-wrap">
-    <table class="tg">
-      <thead>
-        <tr>
-          <th class="tg-baqh">פירוש</th>
-          <th class="tg-p6v9">מילה</th>
-          <th class="tg-baqh">סמן להוספת המילה</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="item">
-
-        </tr>
-
-        <button class="str">START PAGE</button>
-        <script>
-          const electron = require('electron');
-          const {
-            ipcRenderer
-          } = electron;
-
-          ipcRenderer.on('loadWords', function (e, word, meaning) {
-            const newWord = document.createElement('labal');
-            const wordVal = document.createTextNode(word);
-            newWord.appendChild(wordVal);
-            document.querySelector('.item').appendChild(newWord);
-            const newMeaning = document.createElement('labal');
-            const meaningVal = document.createTextNode(meaning);
-            newMeaning.appendChild(meaningVal);
-            document.querySelector('.item').appendChild(newMeaning);
-            var radiobox = document.createElement('input');
-            radiobox.classList.add('radio');
-            radiobox.type = 'radio';
-            document.querySelector('.item').appendChild(radiobox);
-          });
-
-          document
-            .querySelector('.str')
-            .addEventListener('click', str);
-
-          function str(e) {
-            ipcRenderer.send('goToPage', 'Views/mainWindow.html');
-          }
-        </script>
-      </tbody>
-    </table>
-  </div>
 </body>
+<form action="">
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Word</th>
+        <th scope="col">Meaning</th>
+        <th scope="col">Select</th>
+      </tr>
+    </thead>
+    <tbody class="tbody">
+    </tbody>
+  </table>
+
+  <button class="start">Start Game with choosen words</button>
+  
+</form>
+<button class="back">Back to main window</button>
 
 </html>
+
+<script>
+  const electron = require('electron');
+  const {
+    ipcRenderer
+  } = electron;
+
+  // save the selected word to practice them later
+  var words = [];
+
+  document.querySelector('.start').addEventListener('click', (e) => {
+    e.preventDefault();
+    if (words.length != 0) {
+      ipcRenderer.send('practiceSelected', words);
+    } else {
+      alert('No word was selected...');
+    }
+  })
+
+  ipcRenderer.on('loadWords', function (e, word, meaning, num) {
+    const tbody = document.querySelector('.tbody');
+    const tr = document.createElement('tr');
+    tr.setAttribute('id', num);
+    tbody.appendChild(tr);
+
+    creatRow('td', num, num);
+    creatRow('td', word, num, 'word');
+    creatRow('td', meaning, num);
+
+    var select = document.createElement('input');
+    select.type = 'checkbox';
+    select.name = num;
+    select.value = 'check-' + num;
+    select.id = 'check';
+    document.getElementById(num).appendChild(select);
+  });
+
+  function creatRow(element, elementValue, id,ifWord) {
+    const kind = document.createElement(element);
+    const value = document.createTextNode(elementValue);
+    kind.appendChild(value);
+    kind.setAttribute('value', elementValue);
+    if (ifWord == 'word') {
+      kind.setAttribute('class', ifWord + '-' + id);
+    }
+    document.getElementById(id).appendChild(kind);
+  }
+
+  // gets the word in the a row where checkbox is checked and add the word to words array to practice the words later
+  document.addEventListener('click', (e) => {
+    if (e.target.id == 'check') {
+      var wordNumber = e.target.name;
+      var value = document.querySelector('.word-' + wordNumber).getAttribute('value');
+      if (!words.includes(value)) {
+        words.push(value);
+        console.log(value);
+        ipcRenderer.send('saveInGameDb', value);
+      } else {
+        const index = words.indexOf(value);
+        console.log(value);
+        words.splice(index, 1);
+        ipcRenderer.send('remvoeFromGameDb', value);
+      }
+    }
+  });
+
+  document
+    .querySelector('.back')
+    .addEventListener('click', str);
+
+  function str(e) {
+    ipcRenderer.send('goToPage', 'Views/mainWindow.html');
+  }
+</script>

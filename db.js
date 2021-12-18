@@ -5,8 +5,16 @@ const {
     Db
 } = require("mongodb");
 const _ = require('lodash');
-const {capitalizeFirstLetter} = require('./extensions');
-const { words, xor } = require('lodash');
+const {
+    capitalizeFirstLetter
+} = require('./extensions');
+const {
+    words,
+    xor
+} = require('lodash');
+const {
+    truncate
+} = require('original-fs');
 
 main().catch(err => console.log(err));
 
@@ -43,7 +51,7 @@ const gameSchema = new mongoose.Schema({
 //creats collection
 const Word = mongoose.model("Word", wordsSchema);
 const Game = mongoose.model("Game", gameSchema);
-const Unplayed = mongoose.model("Unplayed",unPlayedWords);
+const Unplayed = mongoose.model("Unplayed", unPlayedWords);
 
 // add this to the db when finish the project so this words will appear in any first start  
 // const wordOne = new Word({
@@ -70,6 +78,28 @@ const Unplayed = mongoose.model("Unplayed",unPlayedWords);
 //================================================================================
 
 //DB functions...
+
+//add new word to the game collection
+module.exports.addWordToGame = async function (word) {
+    await Word.find({
+        word: word
+    }).then((res) => {
+        const newWord = ({
+            word: word,
+            meaning: res.meaning,
+            result: {
+                English: 2,
+                Hebrew: 2,
+                writing: false
+            }
+        });
+        console.log(newWord);
+        Game.create(newWord, function (err) {
+            if (err) console.log(err);
+        });
+    });
+}
+
 
 //adds new word to the words collection
 module.exports.addWord = async function (word) {
@@ -147,7 +177,6 @@ async function moveWordsToGame(amountOfWords) {
                     Hebrew: 2,
                     writing: false
                 }
-
             })
             console.log("==========" + i);
             // pushe all used numbers to an array so we can check later if we alrady used that number
@@ -249,7 +278,9 @@ module.exports.ifDeleteGameWord = async function (word) {
         }, {
             ifLearned: true
         });
-        await Unplayed.deleteOne({word: word});
+        await Unplayed.deleteOne({
+            word: word
+        });
     }
 }
 
@@ -282,7 +313,7 @@ module.exports.checkWriting = async function (wordMeaning, writing) {
             meaning: wordMeaning
         }, {
             'result.writing': true
-        }).catch((err)=>{
+        }).catch((err) => {
             console.log(err);
         });
     }
@@ -290,9 +321,11 @@ module.exports.checkWriting = async function (wordMeaning, writing) {
 
 //find all unlearned word from words db and moves theme to the game db
 module.exports.moveUnlearnedWords = async function () {
-    await Word.find({'ifLearned': false}).then((ans => {
+    await Word.find({
+        'ifLearned': false
+    }).then((ans => {
         // creating an obj that fits the game db
-        ans.forEach(obj =>{
+        ans.forEach(obj => {
             const gameObj = ({
                 word: obj.word,
                 meaning: obj.meaning,
@@ -310,8 +343,10 @@ module.exports.moveUnlearnedWords = async function () {
 
 // checks if word db has unlearn words
 module.exports.ifContaintUnlearned = async function () {
-    bool = await Word.count({ifLearned: false}).then((count) =>{
-        if(count > 0)return true;
+    bool = await Word.count({
+        ifLearned: false
+    }).then((count) => {
+        if (count > 0) return true;
         return false;
     })
     return bool;
@@ -319,11 +354,11 @@ module.exports.ifContaintUnlearned = async function () {
 
 // gets an array of words and move them from word db to game db
 module.exports.gameInstanceFromChoosenWords = async function (wordsArray) {
-    console.log(wordsArray);
     await wordsArray.forEach(word => {
-         Word.findOne({word: word}).then((obj) =>{
-            console.log(obj);
-            const gameObj = ({
+        Word.findOne({
+            word: word
+        }).then(async (obj) => {
+            const gameObj = {
                 word: obj.word,
                 meaning: obj.meaning,
                 result: {
@@ -331,45 +366,53 @@ module.exports.gameInstanceFromChoosenWords = async function (wordsArray) {
                     Hebrew: 2,
                     writing: false
                 }
-            })
-            Game.create(gameObj);
-        })
-    })
-    await exports.differ();
+            }
+            await Game.create(gameObj);
+        });
+    });
+    await exports.differChoosenWords(wordsArray);
 }
 
 // count words in the game db
 module.exports.countGame = async function () {
-    console.log("hiiiiiiiiiiiiiii");
-    var ans = await Game.count().then((count) =>{
-        console.log(count + "- 1");
+    var ans = await Game.count().then((count) => {
         return count;
     }).catch((err) => {
         console.log(err);
     });
-    console.log(ans + "- 2");
     return ans;
 }
 
 // count words in the words db
 module.exports.countWords = async function () {
-    var ans = await Word.count().then((count) =>{
+    var ans = await Word.count().then((count) => {
+        return count;
+    });
+    return ans;
+}
+// count words in the Unplayed db
+module.exports.countUnplayed = async function () {
+    var ans = await Unplayed.count().then((count) => {
         return count;
     });
     return ans;
 }
 
-// gets unlearned words from word db
-module.exports.getUnlearned = async function () {
-    var words = await Word.count({'ifLearned': false}).then((words)=>{
+// count unlearned words - word db
+module.exports.countUnlearned = async function () {
+    var words = await Word.count({
+        'ifLearned': false
+    }).then((words) => {
         return words;
     });
     return words;
 }
 
-// gets Learned words from word db
-module.exports.getLearned = async function () {
-    var words = await Word.count({'ifLearned': true}).then((words)=>{
+// count Learned words - word db
+module.exports.countLearned = async function () {
+    var words = await Word.count({
+        'ifLearned': true
+    }).then((words) => {
         return words;
     });
     return words;
@@ -377,24 +420,31 @@ module.exports.getLearned = async function () {
 
 // gets a number and return x words from WORDS db
 // ! don't chacks if there is enought words in the db
-module.exports.getXwordsFromUnplayed = async function (x) {
-    existingNumbers = [];
+module.exports.getXwordsFromWords = async function (x, arr) {
+    var existingWords = [];
     var words = [];
-    for (let i = x; i > 0; i--) {
-        //pick a random number and then add the document on that place to the game db
-        const rand = Math.floor(Math.random() * x);
-        // if num alrady used we want to skip it so we won't practice the same words
-        if (existingNumbers.includes(rand) == false) {
-            const randomDoc = await Unplayed.findOne().skip(rand);
-            await words.push(randomDoc);
-            // pushe all used numbers to an array so we can check later if we alrady used that number
-            await existingNumbers.push(rand);
-        } else {
-            i++;
+    arr.forEach(word => {
+        existingWords.push(word.word);
+    });
+    var wordsList = await Word.find({}).then((res) =>{
+        return res;
+    });
+    wordsList.forEach(word =>{
+        if(!existingWords.includes(word.word)){
+            words.push(word);
+            if(words.length == x)return ;
         }
-    }
+    })
     return words;
 }
+
+//========================================================
+
+module.exports.getUnplayedWords = async function (amount, arr) {
+
+}
+
+//========================================================
 
 // gets a number and return x words from GAME db
 // ! don't chacks if there is enought words in the db
@@ -407,7 +457,7 @@ module.exports.getXwordsFromGame = async function (x) {
         // if num alrady used we want to skip it so we won't practice the same words
         if (existingNumbers.includes(rand) == false) {
             const randomDoc = await Game.findOne().skip(rand);
-            await words.push(randomDoc);
+            words.push(randomDoc);
             // pushe all used numbers to an array so we can check later if we alrady used that number
             await existingNumbers.push(rand);
         } else {
@@ -417,47 +467,92 @@ module.exports.getXwordsFromGame = async function (x) {
     return words;
 }
 
+// async function getGameWords() {
+//     var words = await Game.find({}).then((ans) => {
+//         return ans;
+//     })
+//     return words;
+// }
+
 // search the difference between words db and game db and pushes it to Unplayed db
 module.exports.differ = async function () {
     var words = await Word.find().then((ans) => {
         return ans;
     });
-    var game = await Game.find().then((ans) =>{
+    var game = await Game.find().then((ans) => {
         return ans;
     });
     for (let i = 0; i < words.length; i++) {
         const elementW = words[i];
         for (let y = 0; y < game.length; y++) {
             const elementG = game[y];
-            if(elementW.word == elementG.word){
+            if (elementW.word == elementG.word) {
                 words.shift(elementW);
                 i--;
             }
         }
     }
-    words.forEach(word =>{
+    words.forEach(word => {
         let newObj = ({
             word: word.word,
             meaning: word.meaning
         })
-         Unplayed.create(newObj);
+        Unplayed.create(newObj);
+    })
+}
+
+// search the difference between words db and game db and pushes it to Unplayed db
+module.exports.differChoosenWords = async function (onlyGames) {
+    // ! onlyGames - only contains something after gameInstanceFromChoosenWords() => there was a problem that I wasn't able to identify so it works this way
+    // ! onlyGame contains the words that the user chose to practice from the wordsSelecion page
+    onlyWords = [];
+    // gat all words from words db and only push the word filed to an array
+    await Word.find().then((words) => {
+        words.forEach(word => {
+            onlyWords.push(word.word);
+        });
+    })
+    // find the difference between the words db and the words that the use chose so we can push theme to the Unplayed DB
+    let difference = onlyWords.filter(x => !onlyGames.includes(x));
+
+    // find the words that different (those words that not contains in the game db) and adding theme to the Unplayed DB 
+    difference.forEach(async (word) => {
+        await Word.findOne({
+            word: word
+        }).then((word) => {
+            var obj = {
+                word: word.word,
+                meaning: word.meaning
+            }
+            Unplayed.create(obj);
+        })
     })
 }
 
 // get all words from words db
 module.exports.getAllWords = async function () {
-    var words = await Word.find().then((res) =>{
+    var words = await Word.find().then((res) => {
         return res;
     })
     return words;
 }
-// עמוד הבחירת מילים ספציפיות למשחק  - להמשיך איתו - כרגע הפעולה שמציגה את המילים בעמוד לא עובדת, לבדוק למה ולנסות למחוק את כל הסי אסאס של העמוד ולבנות טבלה מאפס
 
-//להכין עמוד של מחיקת מילים - טבלה של כל המילים שיהיה אפשר לסמן כל אחת או לפלטר בחיפוש ואז למחוק - מחיקה יש כבר פעולה
-// להכין לכל כפתור בעמוד סטאס שפותח חלונית חדשה עם המילים הרלוונטיות
-// לרשום את מהלך המשחק במילים ואז את סדר הפעולות במחשק
-// לחשוב איך אני רנדומלית מציג את העמוד כתיבה במשחק - אני ארשום את התגיות של האינפוט באחביא אותם, ואז ראנדומלית אראה אותם בעזרת סי אס אס
-// לחשוב על מן מצגת כזו שתסביר על המשחק בפתיחה הראשונה של המחשק
-//להכין עמוד שמסביר איך המשחק עובד באנגלית  
-// פעולה שתגדיר לחצנים במקלדת כדי לפתוח לבד את החלונית של הוספת מילה
-// לסדר את כל הקוד
+// get all unlearned words
+module.exports.getUnlearned = async function () {
+    var words = await Word.find({
+        'ifLearned': false
+    }).then((res) => {
+        return res;
+    });
+    return words;
+}
+
+// get all learned words
+module.exports.getLearned = async function () {
+    var words = await Word.find({
+        'ifLearned': true
+    }).then((res) => {
+        return res;
+    });
+    return words;
+}

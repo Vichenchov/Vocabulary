@@ -1,68 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
-            crossorigin="anonymous">
-        <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
-            crossorigin="anonymous"></script>
-        <link rel="stylesheet" type="text/css" href="../Styles/styles.css">
-        <title>Document</title>
-    </head>
-    <body>
-        <label for="">Word will disply here</label><br>
-        
-        <ul>
-            <li>word 1</li>
-            <li>word 2</li>
-            <li>word 3</li>
-            <li>word 4</li>
-        </ul>
-        
 
-        <button class="goBack">choose game page (go back)</button>
-        <button class="str">START PAGE</button>
-        <button class="exit">Exit Game</button>
-    </body>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
+    </script>
+    <link rel="stylesheet" type="text/css" href="../Styles/styles.css">
+    <title>Document</title>
+</head>
 
-    <script>
-        const electron = require('electron');
-        const {ipcRenderer} = electron;
+<body>
+    <label for="">Word will disply here</label><br>
 
-        document
-            .querySelector('.exit')
-            .addEventListener('click', exit);
-        function exit(e) {
-            ipcRenderer.send('exit');
-        }
-        
-        document
+   <ul>
+
+   </ul>
+
+
+    <button class="goBack">choose game page (go back)</button>
+    <button class="str">START PAGE</button>
+    <button class="exit">Exit Game</button>
+</body>
+
+<script>
+    const electron = require('electron');
+    const {
+        ipcRenderer
+    } = electron;
+
+    ipcRenderer.on('currentPracticeCount', function (e, count) {
+        const newlabel = document.createElement('label');
+        //Current amount of Leaned words is
+        const t = document.createTextNode(' +++ Current practice amount: ' + count);
+        newlabel.appendChild(t);
+        document.querySelector('label').appendChild(newlabel);
+    })
+
+    ipcRenderer.on('loadWords', function (e, word, meaning, i) {
+        const button = document.createElement('button');
+        const text = document.createTextNode(word);
+        button.appendChild(text);
+        document.querySelector('ul').appendChild(button);
+        // const wordsElement = document.querySelector('ul');
+
+        // button.setAttribute('id',i);
+        // wordsElement.appendChild(button);
+        // wordsElement.appendChild(button);
+        // button.id = i;
+        // button.value = word;
+        // button.name = meaning;
+        // const value = document.createTextNode(word);
+        // button.appendChild(value);
+    })
+
+    document
+        .querySelector('.exit')
+        .addEventListener('click', exit);
+
+    function exit(e) {
+        ipcRenderer.send('exit');
+    }
+
+    document
         .querySelector('.str')
         .addEventListener('click', str);
 
-        function str(e) {
-            ipcRenderer.send('goToPage', 'Views/mainWindow.html');
-        }
+    function str(e) {
+        ipcRenderer.send('goToPage', 'Views/mainWindow.html');
+    }
 
 
-        document
+    document
         .querySelector('.goBack')
         .addEventListener('click', goBack);
 
-        function goBack(e) {
-            ipcRenderer.send('goBack');
-        }
+    function goBack(e) {
+        ipcRenderer.send('goBack');
+    }
 
-        ipcRenderer.on('currentPracticeCount', function (e,count) {
-            const newlabel = document.createElement('label');
-            //Current amount of Leaned words is
-            const t = document.createTextNode(' +++ Current practice amount: ' + count);
-            newlabel.appendChild(t);
-            document.querySelector('label').appendChild(newlabel);
-        })
-        </script>
+
+</script>
+
 </html>

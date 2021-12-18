@@ -1,51 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-            integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
-        </script>
-        <link rel="stylesheet" type="text/css" href="../Styles/styles.css">
-        <title>Learn English</title>
-    </head>
+
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
+    </script>
+    <link rel="stylesheet" type="text/css" href="../Styles/styles.css">
+    <title>Learn English</title>
+</head>
 <title>Document</title>
+
 <body>
     <h1>Stats</h1><br><br>
     <button class="all">Show all words</button><br>
-    <button class="leaned">Show Leaned words</button><br>
+    <button class="learned">Show Leaned words</button><br>
     <button class="unlearned">Show Unlearned words</button>
-    
+
 </body>
+
 </html>
 
 <script>
-     const electron = require('electron');
-        const {
-            ipcRenderer
-        } = electron;
+    const electron = require('electron');
+    const {
+        ipcRenderer
+    } = electron;
+
+    document.querySelector('.all').addEventListener('click', (e) => {
+        ipcRenderer.send('showStatsTables', 'all');
+    })
+    document.querySelector('.learned').addEventListener('click', (e) => {
+        ipcRenderer.send('showStatsTables', 'learned');
+    })
+    document.querySelector('.unlearned').addEventListener('click', (e) => {
+        ipcRenderer.send('showStatsTables', 'unlearned');
+    })
 
 
-        
-        ipcRenderer.on('countWords', function (e,count) {
-            const newlabel = document.createElement('label');
-            // Current amount of words is
-            const t = document.createTextNode('words ' + count);
-            newlabel.appendChild(t);
-            document.querySelector('h1').appendChild(newlabel);
-        })
-        ipcRenderer.on('countUnlearned', function (e,count) {
-            const newlabel = document.createElement('label');
-            // Current amount of Unlearned words is
-            const t = document.createTextNode('Unlearned ' + count);
-            newlabel.appendChild(t);
-            document.querySelector('h1').appendChild(newlabel);
-        })
-        ipcRenderer.on('countLearned', function (e,count) {
-            const newlabel = document.createElement('label');
-            //Current amount of Leaned words is
-            const t = document.createTextNode('Leaned ' + count);
-            newlabel.appendChild(t);
-            document.querySelector('h1').appendChild(newlabel);
-        })
+
+    ipcRenderer.on('countWords', function (e, count) {
+        const newlabel = document.createElement('label');
+        // Current amount of words is
+        const t = document.createTextNode('words ' + count);
+        newlabel.appendChild(t);
+        document.querySelector('h1').appendChild(newlabel);
+    })
+    ipcRenderer.on('countUnlearned', function (e, count) {
+        const newlabel = document.createElement('label');
+        // Current amount of Unlearned words is
+        const t = document.createTextNode('Unlearned ' + count);
+        newlabel.appendChild(t);
+        document.querySelector('h1').appendChild(newlabel);
+    })
+    ipcRenderer.on('countLearned', function (e, count) {
+        const newlabel = document.createElement('label');
+        //Current amount of Leaned words is
+        const t = document.createTextNode('Leaned ' + count);
+        newlabel.appendChild(t);
+        document.querySelector('h1').appendChild(newlabel);
+    })
 </script>

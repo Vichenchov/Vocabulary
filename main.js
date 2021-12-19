@@ -31,7 +31,9 @@ const {
     getUnlearned,
     countUnplayed,
     addWordToGame,
-    deleteFromGameDb
+    deleteFromGameDb,
+    ifLearendEnglish,
+    ifLearendHebrew
 } = require('./db');
 const _ = require('lodash');
 const {
@@ -138,8 +140,9 @@ ipcMain.on('test', async function (e) {
 
 
 // Practice main function + runs when select buttons clicked (didn't create yet...)
-ipcMain.on('practice', function () {
+ipcMain.on('practice',async function () {
 
+    // await displayWords();
     // shuffleWords() => פעולה שבוחרת 4 מילים מהדי בי משחק ומחזירה אותן
     // מהלך המחשק - מת וך הפעולה הזו תבחר מילה אחת מהדי בי משחק
     // את המילה הזו אנחנו נראה המילה שצריך לענות עלייה - אבל נראה גם את המילה וגם את הפירוש - אחד מהם בשאלה ואחת בתשובות
@@ -175,7 +178,7 @@ ipcMain.on('remvoeFromGameDb', async function (e, word) {
 })
 
 // get the selected words from wordsSelection window and create the practice with thoes words
-ipcMain.on('practiceSelected', async (e, words) => {
+ipcMain.on('practiceSelected', async (e) => {
     displayWords();
 })
 
@@ -183,13 +186,7 @@ ipcMain.on('practiceSelected', async (e, words) => {
 ipcMain.on('unLearned', async function () {
     if (await ifContaintUnlearned()) {
         await moveUnlearnedWords().then(() => {
-            shuffleWords().then(() => {
-                mainWindow.loadURL(url.format({
-                    pathname: path.join(__dirname, 'Views/gameWindow.html'),
-                    protocol: 'file:',
-                    slashes: true
-                }))
-            });
+            displayWords();
         });
     } else {
         mainWindow.webContents.send('noUnlearned');
@@ -214,7 +211,7 @@ ipcMain.on('goToPage', async function (e, pagePath, amount) {
                 // creats an instance of words for the current practice
                 await randomWords(newAmount);
                 mainWindow.once('ready-to-show', () => showPracticeAmount());
-                shuffleWords();
+                displayWords();
             }
             break;
         case 'Views/stats.html':
@@ -290,23 +287,64 @@ ipcMain.on('showStatsTables', async (e, data) => {
 
 // display words in the current practice
 async function displayWords() {
-    // get 4 words (4 objects) that one of theme is the une that the user need to know and the rest are the answer
+    // get 4 words (4 objects) that one of theme is the one that the user need to know and the rest are the answer
     var words = await shuffleWords().then((res) => {
         return res;
     });
     // pick a random number from the game db that the user need to answer in the current turn
-    var randomNum = await getWordForPractice(words).then((res) =>{
+    var randomWord = await getWordForPractice(words).then((res) => {
         return res;
     });
-    //! עכשיו צריך שגם המילה הרנדומאלי תעבור לעמוד המשחק ותוצג במילה המרכזית
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    var displayCase = await hebrewEnglishWriting(randomWord);
+    switch (displayCase) {
+        case 'mainHebrew':
+            mainWindow.once('ready-to-show', () => showPracticeAmount().then(() => {
+                loadWords(words,'e').then(() => {
+                    mainWindow.webContents.send('displayMainWord', randomWord.meaning);
+                });
+            }));
+            break;
+
+        case 'writing':
+            //! עכשיו אני צריך להכין עמוד שיוצג ובו תבדק האיות של המילה
+            //! לשלוח לעמוד משחק את המילה עצמה בעברית (פירוש) ויהיה אינפוט
+            //! פשוט לכתוב עוד פונקציה בעמוד משחק שתרנדר רק את האלמנטים האלה
+            // mainWindow.once('ready-to-show', () => showPracticeAmount().then(() => {
+            //     loadWords(words).then(() => {
+            //         mainWindow.webContents.send('displayMainWord', randomWord.word);
+            //     });
+            // }));
+            break;
+
+        default:
+            // 'mainEnglish'...
+            mainWindow.once('ready-to-show', () => showPracticeAmount().then(() => {
+                loadWords(words,'h').then(() => {
+                    mainWindow.webContents.send('displayMainWord', randomWord.word);
+                });
+            }));
+            break;
+    }
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, 'Views/gameWindow.html'),
         protocol: 'file:',
         slashes: true
     }));
-    mainWindow.once('ready-to-show', () => showPracticeAmount().then(() => {
-        loadWords(words);
-    }));
+}
+
+// dicide how display the words in the current practice - English & Hebrew & Writing page
+async function hebrewEnglishWriting(mainWord) {
+    var englishStatus = mainWord.result.English;
+    var hebrewStatus = mainWord.result.Hebrew;
+    if (englishStatus == 0) {
+        if (hebrewStatus == 0) {
+            return 'writing';
+        } else {
+            return 'mainHebrew';
+        }
+    };
+    return 'mainEnglish';
 }
 
 // get 4 words objects (current options) -> return one word (object) that will be the main word that the user need to answer
@@ -320,7 +358,6 @@ async function getWordForPractice(words) {
     var randomWord = wordsArray[rand];
     return randomWord;
 }
-
 
 
 // getting random words to show while practicing - always return an array with 4 words obj
@@ -422,11 +459,11 @@ ipcMain.on('exit', async function (e) {
 // מציג את המידע של המילים בעמוד מחיקת מילים
 // לקחת את זה ולכתוב פעולה אחת שמציגה את המילים בכל העמודים שצריך את זה
 // ואז לכתוב סיכום לפעולה
-async function loadWords(words) {
+async function loadWords(words,displayHow) {
     for (let i = 0; i < words.length; i++) {
         var word = words[i].word;
         var meaning = words[i].meaning;
-        mainWindow.webContents.send('loadWords', word, meaning, i + 1);
+        mainWindow.webContents.send('loadWords', word, meaning, i + 1,displayHow);
     }
 }
 

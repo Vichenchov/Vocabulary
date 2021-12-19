@@ -81,22 +81,22 @@ const Unplayed = mongoose.model("Unplayed", unPlayedWords);
 
 //add new word to the game collection
 module.exports.addWordToGame = async function (word) {
-    await Word.find({
+    var wordObj = await Word.findOne({
         word: word
     }).then((res) => {
-        const newWord = ({
-            word: word,
-            meaning: res.meaning,
-            result: {
-                English: 2,
-                Hebrew: 2,
-                writing: false
-            }
-        });
-        console.log(newWord);
-        Game.create(newWord, function (err) {
-            if (err) console.log(err);
-        });
+        return res;
+    });
+    var newWord = ({
+        word: word,
+        meaning: wordObj.meaning,
+        result: {
+            English: 2,
+            Hebrew: 2,
+            writing: false
+        }
+    });
+    Game.create(newWord, function (err) {
+        if (err) console.log(err);
     });
 }
 
@@ -426,13 +426,13 @@ module.exports.getXwordsFromWords = async function (x, arr) {
     arr.forEach(word => {
         existingWords.push(word.word);
     });
-    var wordsList = await Word.find({}).then((res) =>{
+    var wordsList = await Word.find({}).then((res) => {
         return res;
     });
-    wordsList.forEach(word =>{
-        if(!existingWords.includes(word.word)){
+    wordsList.forEach(word => {
+        if (!existingWords.includes(word.word)) {
             words.push(word);
-            if(words.length == x)return ;
+            if (words.length == x) return;
         }
     })
     return words;
@@ -467,12 +467,6 @@ module.exports.getXwordsFromGame = async function (x) {
     return words;
 }
 
-// async function getGameWords() {
-//     var words = await Game.find({}).then((ans) => {
-//         return ans;
-//     })
-//     return words;
-// }
 
 // search the difference between words db and game db and pushes it to Unplayed db
 module.exports.differ = async function () {
@@ -556,3 +550,27 @@ module.exports.getLearned = async function () {
     });
     return words;
 }
+
+// module.exports.ifLearendHebrew = async function (word) {
+//     var ans = await Game.findOne({word: word}).then((ans) =>{
+//         if(ans.result.Hebrew == 0){
+//             return true;
+//         }else{
+//             return false;
+//         }
+//     });
+//     console.log('The Hebrew filed is: ' + ans);
+//     return ans;
+// }
+
+// module.exports.ifLearendEnglish = async function (word) {
+//     var ans = await Game.findOne({word: word}).then((ans) =>{
+//         if(ans.result.English == 0){
+//             return true;
+//         }else{
+//             return false;
+//         }
+//     });
+//     console.log('The English filed is: ' + ans);
+//     return ans;
+// }

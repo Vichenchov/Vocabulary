@@ -12,6 +12,7 @@
 </head>
 
 <body>
+
     <label for="">Word will disply here</label><br>
 
    <ul>
@@ -30,6 +31,29 @@
         ipcRenderer
     } = electron;
 
+    ipcRenderer.on('displayMainWord', function (e,mainWord) {
+        console.log(mainWord);
+        const newlabel = document.createElement('h1');
+        const t = document.createTextNode(mainWord);
+        newlabel.appendChild(t);
+        document.querySelector('body').appendChild(newlabel);
+    });
+
+    ipcRenderer.on('loadWords', function (e, word, meaning, i,displayHow) {
+        if(displayHow == 'e'){
+            displayWordsElements(word);
+        }else{
+            displayWordsElements(meaning);
+        }
+    })
+
+    function displayWordsElements(displayHow) {
+        const button = document.createElement('button');
+        const text = document.createTextNode(displayHow);
+        button.appendChild(text);
+        document.querySelector('ul').appendChild(button);
+    }
+
     ipcRenderer.on('currentPracticeCount', function (e, count) {
         const newlabel = document.createElement('label');
         //Current amount of Leaned words is
@@ -38,22 +62,7 @@
         document.querySelector('label').appendChild(newlabel);
     })
 
-    ipcRenderer.on('loadWords', function (e, word, meaning, i) {
-        const button = document.createElement('button');
-        const text = document.createTextNode(word);
-        button.appendChild(text);
-        document.querySelector('ul').appendChild(button);
-        // const wordsElement = document.querySelector('ul');
 
-        // button.setAttribute('id',i);
-        // wordsElement.appendChild(button);
-        // wordsElement.appendChild(button);
-        // button.id = i;
-        // button.value = word;
-        // button.name = meaning;
-        // const value = document.createTextNode(word);
-        // button.appendChild(value);
-    })
 
     document
         .querySelector('.exit')

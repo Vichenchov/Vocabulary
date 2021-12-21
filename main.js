@@ -33,7 +33,9 @@ const {
     addWordToGame,
     deleteFromGameDb,
     ifLearendEnglish,
-    ifLearendHebrew
+    ifLearendHebrew,
+    checkEnglish,
+    checkHebrew
 } = require('./db');
 const _ = require('lodash');
 const {
@@ -117,55 +119,31 @@ app.on('ready', function () {
 })
 
 
-//=================================================================================
-
-//* ===>>> test function -> works on delete button click <<<===
-//* ===>>> test function -> works on delete button click <<<===
-//* ===>>> test function -> works on delete button click <<<===
-
-
-ipcMain.on('test', async function (e) {
-
-})
-
-
-
-//* ===>>> test function -> works on delete button click <<<===
-//* ===>>> test function -> works on delete button click <<<===cd
-//* ===>>> test function -> works on delete button click <<<===
-
-
-
-
+//!=================================================================================
 
 
 // Practice main function + runs when select buttons clicked (didn't create yet...)
-ipcMain.on('practice',async function () {
-
-    // await displayWords();
-    // shuffleWords() => פעולה שבוחרת 4 מילים מהדי בי משחק ומחזירה אותן
-    // מהלך המחשק - מת וך הפעולה הזו תבחר מילה אחת מהדי בי משחק
-    // את המילה הזו אנחנו נראה המילה שצריך לענות עלייה - אבל נראה גם את המילה וגם את הפירוש - אחד מהם בשאלה ואחת בתשובות
-    // ואת שאר התשובות נבחר רנדומאלית מ3 המילים האחרות שקיבלנו !!! - לשים לב שהפעולה שמחזירה את 4 המילים מחזירה את האובייקט של המילה ולא רק את המילה 
-    // בנוסף לשים לב שהמילה שמנחשים היא אחת המילים שהגיעו מהדי בי משחק - לעשות פשוט ראנדום לאחת המילים שקיבלנו מהדי בי משחק
-
-    // להוסיף פעולה שמציגה את ה4 מילים בעמוד המשחק - להשתמש במה שרשמתי כדי להציג את הטבלאות
-
-
-    // * הפעולה מתחת גורמת לכך שמספר המילים בדי בי משחק יתעדכן
-    // * חשוב שיהיה את טעינת העמוד אחרי הקריאה לפעולה שמביאה את כמות המילים 
-    // * חשוב שכל זה יבוא אחרי שמחקו/הוסיפו מילה מהדי בי משחק
-    // mainWindow.once('ready-to-show', () => showPracticeAmount());
-    // mainWindow.loadURL(url.format({
-    //     pathname: path.join(__dirname, 'Views/gameWindow.html'),
-    //     protocol: 'file:',
-    //     slashes: true
-    // }))
-
+ipcMain.on('practice', async function (e,word, meaning, state) {
+    console.log(word);
+    console.log(meaning);
+    console.log(state);
+    switch (state) {
+        case 'h'://answers in english
+            await checkEnglish(word, meaning);
+            break;
+        case 'e':
+            await checkHebrew(word, meaning);
+            break;
+    
+        default:
+            await checkWriting(meaning, word);
+            break;
+    }
+    await displayWords();
 })
 
 
-// =============================================================================================
+//!=============================================================================================
 
 // save word in game db if the clicked the spacific check box on wordsSelection window
 ipcMain.on('saveInGameDb', async function (e, word) {
@@ -210,7 +188,6 @@ ipcMain.on('goToPage', async function (e, pagePath, amount) {
             } else {
                 // creats an instance of words for the current practice
                 await randomWords(newAmount);
-                mainWindow.once('ready-to-show', () => showPracticeAmount());
                 displayWords();
             }
             break;
@@ -295,32 +272,27 @@ async function displayWords() {
     var randomWord = await getWordForPractice(words).then((res) => {
         return res;
     });
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     var displayCase = await hebrewEnglishWriting(randomWord);
     switch (displayCase) {
         case 'mainHebrew':
             mainWindow.once('ready-to-show', () => showPracticeAmount().then(() => {
-                loadWords(words,'e').then(() => {
+                loadWords(words, 'e').then(() => {
                     mainWindow.webContents.send('displayMainWord', randomWord.meaning);
                 });
             }));
             break;
 
         case 'writing':
-            //! עכשיו אני צריך להכין עמוד שיוצג ובו תבדק האיות של המילה
-            //! לשלוח לעמוד משחק את המילה עצמה בעברית (פירוש) ויהיה אינפוט
-            //! פשוט לכתוב עוד פונקציה בעמוד משחק שתרנדר רק את האלמנטים האלה
-            // mainWindow.once('ready-to-show', () => showPracticeAmount().then(() => {
-            //     loadWords(words).then(() => {
-            //         mainWindow.webContents.send('displayMainWord', randomWord.word);
-            //     });
-            // }));
+            mainWindow.once('ready-to-show', () => showPracticeAmount().then(() => {
+                mainWindow.webContents.send('displayMainWord', randomWord.meaning);
+                mainWindow.webContents.send('writeWord');
+            }));
             break;
 
         default:
             // 'mainEnglish'...
             mainWindow.once('ready-to-show', () => showPracticeAmount().then(() => {
-                loadWords(words,'h').then(() => {
+                loadWords(words, 'h').then(() => {
                     mainWindow.webContents.send('displayMainWord', randomWord.word);
                 });
             }));
@@ -459,11 +431,11 @@ ipcMain.on('exit', async function (e) {
 // מציג את המידע של המילים בעמוד מחיקת מילים
 // לקחת את זה ולכתוב פעולה אחת שמציגה את המילים בכל העמודים שצריך את זה
 // ואז לכתוב סיכום לפעולה
-async function loadWords(words,displayHow) {
+async function loadWords(words, displayHow) {
     for (let i = 0; i < words.length; i++) {
         var word = words[i].word;
         var meaning = words[i].meaning;
-        mainWindow.webContents.send('loadWords', word, meaning, i + 1,displayHow);
+        mainWindow.webContents.send('loadWords', word, meaning, i + 1, displayHow);
     }
 }
 

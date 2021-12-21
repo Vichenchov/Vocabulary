@@ -203,17 +203,23 @@ module.exports.killUnplayed = async function () {
     await Unplayed.deleteMany({});
 }
 
+
+
 //checks if English - if English to Hebrew answer is correct
-// gets a word and a boolean if the user answerd correctly
+// gets a word and the meaning and checkes if the answer is correct
 // if yes - English of the word -- else English ++
 // English can't be more then 2
-module.exports.checkEnglish = async function (word, ifCorrect) {
+module.exports.checkEnglish = async function (word, meaning) {
     const obj = await Game.findOne({
         word: word
     });
     var currentCount = obj.result.English;
     // checks if the answer is correct - if true -- else ++ English field
-    ifCorrect ? currentCount -= 1 : currentCount += 1;
+    if (obj.meaning == meaning) {
+        currentCount -= 1;
+    } else {
+        currentCount += 1;
+    }
     // English can't be more then 2 ans less then zero - my game rules
     if (currentCount > 2) currentCount--;
     if (currentCount < 0) currentCount++;
@@ -226,16 +232,20 @@ module.exports.checkEnglish = async function (word, ifCorrect) {
 }
 
 //checks if Hebrew - if Hebrew to English answer is correct
-// gets a word and a boolean if the user answerd correctly
+// gets a word and the meaning and checkes if the answer is correct
 // if yes - English of the word -- else Hebrew ++
 // English can't be more then 2
-module.exports.checkHebrew = async function (word, ifCorrect) {
+module.exports.checkHebrew = async function (word, meaning) {
     const obj = await Game.findOne({
-        word: word
+        meaning: meaning
     });
     var currentCount = obj.result.Hebrew;
     // checks if the answer is correct - if true -- else ++ Hebrew field
-    ifCorrect ? currentCount -= 1 : currentCount += 1;
+    if (obj.word == word) {
+        currentCount -= 1;
+    } else {
+        currentCount += 1;
+    }
     // Hebrew can't be more then 2 ans less then zero - my game rules
     if (currentCount > 2) currentCount--;
     if (currentCount < 0) currentCount++;
@@ -309,13 +319,23 @@ module.exports.checkWriting = async function (wordMeaning, writing) {
     var word = obj.word;
     console.log(word);
     if (word == capitalizeFirstLetter(writing)) {
-        await Game.updateOne({
+        await Game.deleteOne({
+            meaning: wordMeaning
+        });
+        await Word.updateOne({
             meaning: wordMeaning
         }, {
-            'result.writing': true
-        }).catch((err) => {
-            console.log(err);
+            $set: {
+                ifLearned: true
+            }
         });
+        // await Game.updateOne({
+        //     meaning: wordMeaning
+        // }, {
+        //     'result.writing': true
+        // }).catch((err) => {
+        //     console.log(err);
+        // });
     }
 }
 

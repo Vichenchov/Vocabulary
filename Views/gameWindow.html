@@ -15,9 +15,9 @@
 
     <label for="">Word will disply here</label><br>
 
-   <ul>
+    <ul>
 
-   </ul>
+    </ul>
 
 
     <button class="goBack">choose game page (go back)</button>
@@ -25,71 +25,7 @@
     <button class="exit">Exit Game</button>
 </body>
 
-<script>
-    const electron = require('electron');
-    const {
-        ipcRenderer
-    } = electron;
-
-    ipcRenderer.on('displayMainWord', function (e,mainWord) {
-        console.log(mainWord);
-        const newlabel = document.createElement('h1');
-        const t = document.createTextNode(mainWord);
-        newlabel.appendChild(t);
-        document.querySelector('body').appendChild(newlabel);
-    });
-
-    ipcRenderer.on('loadWords', function (e, word, meaning, i,displayHow) {
-        if(displayHow == 'e'){
-            displayWordsElements(word);
-        }else{
-            displayWordsElements(meaning);
-        }
-    })
-
-    function displayWordsElements(displayHow) {
-        const button = document.createElement('button');
-        const text = document.createTextNode(displayHow);
-        button.appendChild(text);
-        document.querySelector('ul').appendChild(button);
-    }
-
-    ipcRenderer.on('currentPracticeCount', function (e, count) {
-        const newlabel = document.createElement('label');
-        //Current amount of Leaned words is
-        const t = document.createTextNode(' +++ Current practice amount: ' + count);
-        newlabel.appendChild(t);
-        document.querySelector('label').appendChild(newlabel);
-    })
-
-
-
-    document
-        .querySelector('.exit')
-        .addEventListener('click', exit);
-
-    function exit(e) {
-        ipcRenderer.send('exit');
-    }
-
-    document
-        .querySelector('.str')
-        .addEventListener('click', str);
-
-    function str(e) {
-        ipcRenderer.send('goToPage', 'Views/mainWindow.html');
-    }
-
-
-    document
-        .querySelector('.goBack')
-        .addEventListener('click', goBack);
-
-    function goBack(e) {
-        ipcRenderer.send('goBack');
-    }
-
-
+<script src="../DOM/gameWindow.js">
 </script>
 
 </html>

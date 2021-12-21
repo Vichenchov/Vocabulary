@@ -20,3 +20,12 @@ function creatRow(element, elementValue, id) {
     kind.appendChild(value);
     document.getElementById(id).appendChild(kind);
 }
+
+
+document
+  .querySelector('.back')
+  .addEventListener('click', str);
+
+function str(e) {
+  ipcRenderer.send('goToPage', 'Views/stats.html');
+}

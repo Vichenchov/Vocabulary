@@ -121,6 +121,7 @@ app.on('ready', function () {
 
 //!=================================================================================
 
+var gameCurrentPracticeCount;
 
 // Practice main function + runs when select buttons clicked (didn't create yet...)
 ipcMain.on('practice', async function (e,word, meaning, state) {
@@ -139,8 +140,23 @@ ipcMain.on('practice', async function (e,word, meaning, state) {
             await checkWriting(meaning, word);
             break;
     }
-    await displayWords();
+    var ifGameIsEmpty = await countGame().then((res) => {
+        if(res == 0)return true;
+        return false;
+    })
+    !ifGameIsEmpty ? await displayWords() : await finishePractice();
 })
+
+async function finishePractice() {
+    mainWindow.loadURL(url.format({
+        pathname: path.join(__dirname, 'Views/finishPractice.html'),
+        protocol: 'file:',
+        slashes: true
+    }));
+    mainWindow.once('ready-to-show', () => {
+        mainWindow.webContents.send('showAmount',gameCurrentPracticeCount);
+    });
+}
 
 
 //!=============================================================================================
@@ -214,7 +230,9 @@ ipcMain.on('goToPage', async function (e, pagePath, amount) {
         pathname: path.join(__dirname, pagePath),
         protocol: 'file:',
         slashes: true
-    }))
+    })).catch((err) => {
+        console.log(err);
+    })
 })
 
 
@@ -253,7 +271,7 @@ ipcMain.on('showStatsTables', async (e, data) => {
             break;
     }
     console.log(words);
-    creatWindow();
+    // creatWindow();
     mainWindow.loadURL(url.format({
         pathname: path.join(__dirname, 'Views/showDataTables.html'),
         protocol: 'file:',
@@ -381,26 +399,6 @@ async function shuffleWords() {
     }
 }
 
-// // ! ????????????????????????????????????????????????????????????????????????
-// //check that we won't get the same words from the game db and the Unplayed db 
-// //so the answers always won't be the same
-// async function differWords(game, words) {
-//     for (let i = 0; i < game.length; i++) {
-//         const wordFromGame = game[i];
-//         for (let y = 0; y < words.length; y++) {
-//             const wordFromWords = words[y];
-//             if (wordFromGame.word == wordFromWords.word) {
-//                 words.shift(wordFromWords);
-//                 await getXwordsFromGame(1).then((newWord) => {
-//                     words.push(newWord[0]);
-//                     y--;
-//                 });
-//             }
-//         }
-//     }
-//     return game.concat(words);
-// }
-
 ipcMain.on('goBack', async function () {
     await killUnplayed().then(() => {
         killGameInstance();
@@ -423,11 +421,6 @@ ipcMain.on('exit', async function (e) {
 
 })
 
-// !=================================================================================
-// !=================================================================================
-// !=================================================================================
-// !=================================================================================
-
 // מציג את המידע של המילים בעמוד מחיקת מילים
 // לקחת את זה ולכתוב פעולה אחת שמציגה את המילים בכל העמודים שצריך את זה
 // ואז לכתוב סיכום לפעולה
@@ -439,17 +432,14 @@ async function loadWords(words, displayHow) {
     }
 }
 
-// !=================================================================================
-// !=================================================================================
-// !=================================================================================
-// !=================================================================================
-
 
 // displays the amount of words in the current practice => current amount of words in the game db
 async function showPracticeAmount(params) {
     var count = await countGame().then((res) => {
         return res;
     });
+    if(gameCurrentPracticeCount == null) gameCurrentPracticeCount = count;
+    console.log('gameCurrentPracticeCount is ' + gameCurrentPracticeCount);
     console.log(count + " words in game db...");
     mainWindow.webContents.send('currentPracticeCount', count);
 }

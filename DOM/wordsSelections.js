@@ -67,5 +67,5 @@ document
   .addEventListener('click', str);
 
 function str(e) {
-  ipcRenderer.send('goToPage', 'Views/mainWindow.html');
+  ipcRenderer.send('goToPage', 'Views/chooseGame.html');
 }

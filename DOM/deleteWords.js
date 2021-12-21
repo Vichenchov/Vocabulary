@@ -68,3 +68,11 @@ document.addEventListener('click', (e) => {
     }
   }
 });
+
+document
+  .querySelector('.goBack')
+  .addEventListener('click', str);
+
+function str(e) {
+  ipcRenderer.send('goToPage', 'Views/mainWindow.html');
+}

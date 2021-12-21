@@ -1,16 +1,17 @@
+const {
+    ipcMain
+} = require('electron');
 const electron = require('electron');
 const {
     ipcRenderer
 } = electron;
 
 var state;
+var gameMaxCount;
 
-function play(e) {
-    
-}
 
 document.addEventListener('click', function (e) {
-    if(e.target.value == 'btn'){
+    if (e.target.value == 'btn') {
         // console.log(document.querySelector('#inputValue').value);
         console.log(e.target.name);
         console.log(document.querySelector('h1').getAttribute('value'));
@@ -46,7 +47,7 @@ ipcRenderer.on('writeWord', function (e) {
     const input = document.createElement('input');
     input.setAttribute('id', 'inputValue');
     const button = document.createElement('button');
-    button.setAttribute('type','submit');
+    button.setAttribute('type', 'submit');
     button.setAttribute('value', 'btn');
     var text = document.createTextNode('submit');
     button.appendChild(text);

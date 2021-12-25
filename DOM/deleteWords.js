@@ -29,6 +29,9 @@ ipcRenderer.on('loadWords', function (e, word, meaning, num) {
   const tbody = document.querySelector('.tbody');
   const tr = document.createElement('tr');
   tr.setAttribute('id', num);
+  tr.setAttribute('value', word);
+  tr.classList.add('trow');
+  // tr.setAttribute('class', 'trow');
   tbody.appendChild(tr);
 
   creatRow('td', num, num);

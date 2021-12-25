@@ -7,8 +7,6 @@ const {
     randomWords,
     ifEnoughWords,
     killGameInstance,
-    checkEtH,
-    checkHtE,
     ifWordExists,
     ifDeleteGameWord,
     ifGameDbIsEmpty,
@@ -525,6 +523,39 @@ async function showCount() {
     mainWindow.webContents.send('countLearned', learned);
     mainWindow.webContents.send('countUnlearned', unlearned);
 }
+
+ipcMain.on('dataForSearchBar',async function (e,data) {
+    var onlyWords = [];
+    switch (data) {
+        case 'all':
+            var words = await getAllWords().then((res) => {
+                return res;
+            }).catch((err) => {
+                console.log(err);
+            });
+            break;
+        case 'learned':
+            var words = await getLearned().then((res) => {
+                return res;
+            }).catch((err) => {
+                console.log(err);
+            });
+            break;
+        case 'unlearned':
+            var words = await getUnlearned().then((res) => {
+                return res;
+            }).catch((err) => {
+                console.log(err);
+            });
+            break;
+        default:
+            break;
+    }
+    words.forEach((word) =>{
+        onlyWords.push(word.word);
+    })
+    mainWindow.webContents.send('dataSearch', onlyWords);
+})
 
 // This is just an array that will repesent the main Menu Sometime we don't want
 // to use the main Menu so we can build one as we like or remove it

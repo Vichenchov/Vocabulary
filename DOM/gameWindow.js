@@ -72,6 +72,7 @@ function displayWordsElements(displayHow, i) {
     button.setAttribute('value', 'btn');
     button.setAttribute('name', displayHow);
     button.setAttribute('id', displayHow + '-' + i);
+    // button.classList.add('btn btn-outline-primary');
     document.querySelector('ul').appendChild(button);
 }
 
@@ -89,14 +90,6 @@ document
 
 function exit(e) {
     ipcRenderer.send('exit');
-}
-
-document
-    .querySelector('.str')
-    .addEventListener('click', str);
-
-function str(e) {
-    ipcRenderer.send('goToPage', 'Views/mainWindow.html');
 }
 
 document

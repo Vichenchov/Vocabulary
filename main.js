@@ -40,6 +40,9 @@ const {
     formatWord
 } = require('./extensions');
 var AutoLaunch = require('auto-launch');
+const {
+    assert
+} = require('console');
 require('electron-reload')(__dirname);
 
 const {
@@ -77,8 +80,10 @@ function creatWindow() {
             nodeIntegration: true,
             contextIsolation: false,
             enableRemoteModule: true
+        },
+        resizable: false,
+        icon: 'dictionary.png'
 
-        }
     });
 }
 
@@ -122,27 +127,27 @@ app.on('ready', function () {
 var gameCurrentPracticeCount;
 
 // Practice main function + runs when select buttons clicked (didn't create yet...)
-ipcMain.on('practice', async function (e,word, meaning, state) {
+ipcMain.on('practice', async function (e, word, meaning, state) {
     console.log(word);
     console.log(meaning);
     console.log(state);
     switch (state) {
-        case 'h'://answers in english
+        case 'h': //answers in english
             await checkEnglish(word, meaning);
             break;
         case 'e':
             await checkHebrew(word, meaning);
             break;
-    
+
         default:
             await checkWriting(meaning, word);
             break;
     }
     var ifGameIsEmpty = await countGame().then((res) => {
-        if(res == 0)return true;
+        if (res == 0) return true;
         return false;
-    })
-    !ifGameIsEmpty ? await displayWords() : await finishePractice();
+    });
+    (!ifGameIsEmpty) ? await displayWords() : await finishePractice();
 })
 
 async function finishePractice() {
@@ -152,7 +157,7 @@ async function finishePractice() {
         slashes: true
     }));
     mainWindow.once('ready-to-show', () => {
-        mainWindow.webContents.send('showAmount',gameCurrentPracticeCount);
+        mainWindow.webContents.send('showAmount', gameCurrentPracticeCount);
     });
 }
 
@@ -185,25 +190,34 @@ ipcMain.on('unLearned', async function () {
     }
 })
 
+ipcMain.on('getWordsAmount', async (e) => {
+    var newAmount = await countWords().then(value => {
+        return value;
+    });
+    console.log(newAmount);
+    mainWindow.webContents.send('data', newAmount);
+})
+
 //Gose to any window - the function gets the specific path and change the window to specific html page (not opens a new window!)
 //if goes to the game page after
 ipcMain.on('goToPage', async function (e, pagePath, amount) {
     switch (pagePath) {
         case 'Views/gameWindow.html':
             // gets the number of words for the current practice 
-            var newAmount = await pickAmount(amount).then(value => {
-                return value;
-            });
-            // If the user inserted amount that bigger then the amount of words in the db...
-            if (newAmount < amount || newAmount == 0) {
-                //Shows a message to the user about the amount of words he iserted
-                mainWindow.webContents.send('data', newAmount);
-                return;
-            } else {
-                // creats an instance of words for the current practice
-                await randomWords(newAmount);
+            // var newAmount = await pickAmount(amount).then(value => {
+            //     return value;
+            // });
+            // // If the user inserted amount that bigger then the amount of words in the db...
+            // if (newAmount < amount || newAmount == 0) {
+            //     //Shows a message to the user about the amount of words he iserted
+            //     mainWindow.webContents.send('data', newAmount);
+            //     return;
+            // } else {
+            // creats an instance of words for the current practice
+            await randomWords(amount).then(() => {
                 displayWords();
-            }
+            });
+            // }
             break;
         case 'Views/stats.html':
             mainWindow.once('ready-to-show', () => showCount());
@@ -234,7 +248,7 @@ ipcMain.on('goToPage', async function (e, pagePath, amount) {
 })
 
 
-// delete words from game db (gets an array of words to delete)
+// delete words from words db (gets an array of words to delete)
 ipcMain.on('deleteWords', async (e, words) => {
     await deleteWords(words);
     mainWindow.webContents.send('wordsDeleted');
@@ -275,7 +289,7 @@ ipcMain.on('showStatsTables', async (e, data) => {
         protocol: 'file:',
         slashes: true
     }));
-    mainWindow.once('ready-to-show', () => loadWords(words));
+    mainWindow.once('ready-to-show', () => loadWords(words, data));
 })
 
 // display words in the current practice
@@ -284,6 +298,7 @@ async function displayWords() {
     var words = await shuffleWords().then((res) => {
         return res;
     });
+    console.log(words);
     // pick a random number from the game db that the user need to answer in the current turn
     var randomWord = await getWordForPractice(words).then((res) => {
         return res;
@@ -318,6 +333,10 @@ async function displayWords() {
         pathname: path.join(__dirname, 'Views/gameWindow.html'),
         protocol: 'file:',
         slashes: true
+        // explaination of the code: Just building in a funcy way the path to page that
+        // we want it to go to the path is: 'file://dirname/Views/mainWindow.html'
+    })).catch((err =>{ 
+        console.log(err);
     }));
 }
 
@@ -436,7 +455,7 @@ async function showPracticeAmount(params) {
     var count = await countGame().then((res) => {
         return res;
     });
-    if(gameCurrentPracticeCount == null) gameCurrentPracticeCount = count;
+    if (gameCurrentPracticeCount == null) gameCurrentPracticeCount = count;
     console.log('gameCurrentPracticeCount is ' + gameCurrentPracticeCount);
     console.log(count + " words in game db...");
     mainWindow.webContents.send('currentPracticeCount', count);
@@ -444,16 +463,16 @@ async function showPracticeAmount(params) {
 
 // checks if there is enough words in the db as the user inserts
 // if not, returns the number of the words in the db
-async function pickAmount(amount) {
-    // ans is an obj with two fields - (1)boolean if Enough words - (2) - num of words in the db
-    var ans = await ifEnoughWords(amount).then(value => {
-        return value;
-    });
-    // *also if amount == '', aka 'undifined' means that the user just clicked start
-    // *so it returns the amount of words in the db so the user starts practice all the words
-    if (ans.result == false || amount == '') amount = ans.numOfWordsInDb;
-    return amount;
-}
+// async function pickAmount(amount) {
+//     // ans is an obj with two fields - (1)boolean if Enough words - (2) - num of words in the db
+//     var ans = await ifEnoughWords(amount).then(value => {
+//         return value;
+//     });
+//     // *also if amount == '', aka 'undifined' means that the user just clicked start
+//     // *so it returns the amount of words in the db so the user starts practice all the words
+//     if (ans.result == false || amount == '') amount = ans.numOfWordsInDb;
+//     return amount;
+// }
 
 //Gets new word and inserts it to the db, also gets two more params:
 //(ifExit) gets boolean if the app should cloes after the word was saved
@@ -466,8 +485,6 @@ ipcMain.on('addNewWord', async function (e, newWordInsert, ifExit, pagePath) {
         meaning: newWordInsert.meaning,
         ifLearned: false
     }
-
-    console.log(newInsert);
 
     var count = await ifWordExists(newInsert.word).then(ans => {
         return ans;
@@ -483,7 +500,6 @@ ipcMain.on('addNewWord', async function (e, newWordInsert, ifExit, pagePath) {
     if (newWordInsert.word != '' && newWordInsert.meaning != '') {
         //insert method from db module
         await addWord(newInsert);
-        console.log('Inserted!!!');
         // If spacific button was clicked - it redirects to the chooseGame page
         if (pagePath !== '') mainWindow.loadURL(url.format({
             pathname: path.join(__dirname, pagePath),
@@ -524,7 +540,7 @@ async function showCount() {
     mainWindow.webContents.send('countUnlearned', unlearned);
 }
 
-ipcMain.on('dataForSearchBar',async function (e,data) {
+ipcMain.on('dataForSearchBar', async function (e, data) {
     var onlyWords = [];
     switch (data) {
         case 'all':
@@ -551,7 +567,7 @@ ipcMain.on('dataForSearchBar',async function (e,data) {
         default:
             break;
     }
-    words.forEach((word) =>{
+    words.forEach((word) => {
         onlyWords.push(word.word);
     })
     mainWindow.webContents.send('dataSearch', onlyWords);
@@ -560,30 +576,12 @@ ipcMain.on('dataForSearchBar',async function (e,data) {
 // This is just an array that will repesent the main Menu Sometime we don't want
 // to use the main Menu so we can build one as we like or remove it
 const mainMenuTemplate = [{
-    label: 'file',
-    submenu: [{
-        label: 'Add Item',
-        click() {
-            creatAddWindow();
-        }
-    }, {
-        label: 'Clear Item',
-        click() {
-            mainWindow.webContents.send('item:clear');
-        }
-    }, {
-        label: 'Quit',
-        // the accelerator checks the OS of the comuter (process.platform checks the
-        // current OS, you can run this comman on node) darwin is the name that will
-        // pop-up if we using MAC-OS then relating to the OS, we choose which keys to
-        // click to close the app window
-        accelerator: process.platform == 'darwin' ?
-            'Command+Q' : 'Ctrl+Q',
-        click() {
-            app.quit();
-        }
-
-    }]
+    label: 'Quit',
+    accelerator: process.platform == 'darwin' ?
+        'Command+Q' : 'Ctrl+Q',
+    click() {
+        app.quit();
+    }
 }]
 
 // If mac, add empty object to menu On a mac, when we open a new window, insted

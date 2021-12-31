@@ -6,6 +6,12 @@ const {
 // save the selected word to delete them later
 var words = [];
 
+// gets the spacific to load every time
+// window.addEventListener('load', (e) => {
+//   console.log(rows);
+//   ipcRenderer.send('dataForSearchBar', dataLoad);
+// });
+
 // show warrning message before deleting words
 document.querySelector('.delete-btn').addEventListener('click', (e) => {
   e.preventDefault();
@@ -26,6 +32,7 @@ ipcRenderer.on('wordsDeleted', (e) => {
 
 // creates table elements with data 
 ipcRenderer.on('loadWords', function (e, word, meaning, num) {
+  ipcRenderer.send('dataForSearchBar', 'all');
   const tbody = document.querySelector('.tbody');
   const tr = document.createElement('tr');
   tr.setAttribute('id', num);

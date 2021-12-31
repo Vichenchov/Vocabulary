@@ -16,10 +16,13 @@ document.querySelector('.start').addEventListener('click', (e) => {
 })
 
 ipcRenderer.on('loadWords', function (e, word, meaning, num) {
+  ipcRenderer.send('dataForSearchBar', 'all');
   const tbody = document.querySelector('.tbody');
   const tr = document.createElement('tr');
   tr.setAttribute('id', num);
   tbody.appendChild(tr);
+  tr.setAttribute('value', word);
+  tr.classList.add('trow');
 
   creatRow('td', num, num);
   creatRow('td', word, num, 'word');
@@ -33,7 +36,7 @@ ipcRenderer.on('loadWords', function (e, word, meaning, num) {
   document.getElementById(num).appendChild(select);
 });
 
-function creatRow(element, elementValue, id,ifWord) {
+function creatRow(element, elementValue, id, ifWord) {
   const kind = document.createElement(element);
   const value = document.createTextNode(elementValue);
   kind.appendChild(value);
@@ -67,5 +70,5 @@ document
   .addEventListener('click', str);
 
 function str(e) {
-  ipcRenderer.send('goToPage', 'Views/chooseGame.html');
+  ipcRenderer.send('goBack');
 }

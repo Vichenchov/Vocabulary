@@ -9,14 +9,6 @@ let rows = document.getElementsByClassName('trow');
 
 var suggestions;
 
-// gets the spacific to load every time
-window.addEventListener('load', (e) => {
-    console.log(rows);
-    // !צריך לבדוק איך אני מעביר כל פעם את המידע הרלוונטי לטבלה
-    // ! ובנוסף שיעבוד בכל העמודים
-    ipcRenderer.send('dataForSearchBar', 'all');
-});
-
 ipcRenderer.on('dataSearch', (e, data) => {
     console.log(data);
     suggestions = data;

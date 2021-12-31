@@ -63,21 +63,6 @@ document
         ipcRenderer.send('goToPage', 'Views/mainWindow.html');
     });
 
-document
-    .querySelector('.str')
-    .addEventListener('click', str);
-
-function str(e) {
-    ipcRenderer.send('goToPage', 'Views/mainWindow.html');
-}
-document
-    .querySelector('.str')
-    .addEventListener('click', str);
-
-function str(e) {
-    ipcRenderer.send('goToPage', 'Views/mainWindow.html');
-}
-
 ipcRenderer.on('notIserted', function (e) {
     document.querySelector('.exists').classList.add('hide');
     document.querySelector('.empty').classList.remove('hide');

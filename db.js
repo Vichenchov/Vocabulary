@@ -450,9 +450,10 @@ module.exports.getXwordsFromWords = async function (x, arr) {
         return res;
     });
     wordsList.forEach(word => {
-        if (!existingWords.includes(word.word)) {
-            words.push(word);
-            if (words.length == x) return;
+        if (words.length != x){
+            if (!existingWords.includes(word.word)) {
+                words.push(word);
+            }
         }
     })
     return words;

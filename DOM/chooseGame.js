@@ -60,7 +60,7 @@ ipcRenderer.on('data', function (e, newAmount){
     maxAmount = newAmount;
     console.log(newAmount);
     document.querySelector('.amount').setAttribute('max', newAmount);
-    document.querySelector('.amount').setAttribute('placeholder', 'Max words is ' + newAmount);
+    document.querySelector('.amount').setAttribute('placeholder', 'max words is ' + newAmount);
 })
 
 

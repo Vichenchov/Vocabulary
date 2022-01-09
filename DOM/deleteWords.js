@@ -45,13 +45,17 @@ ipcRenderer.on('loadWords', function (e, word, meaning, num) {
   creatRow('td', word, num, 'word');
   creatRow('td', meaning, num);
 
+  var td = document.createElement('td');
   var select = document.createElement('input');
   select.type = 'checkbox';
   select.name = num;
   select.value = 'check-' + num;
   select.id = 'check';
-  document.getElementById(num).appendChild(select);
+  select.setAttribute('class','form-check-input');
+  td.appendChild(select);
+  document.getElementById(num).appendChild(td);
 });
+
 
 // helps create elements
 function creatRow(element, elementValue, id, ifWord) {

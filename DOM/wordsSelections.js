@@ -28,12 +28,16 @@ ipcRenderer.on('loadWords', function (e, word, meaning, num) {
   creatRow('td', word, num, 'word');
   creatRow('td', meaning, num);
 
+  
+  var td = document.createElement('td');
   var select = document.createElement('input');
   select.type = 'checkbox';
   select.name = num;
   select.value = 'check-' + num;
   select.id = 'check';
-  document.getElementById(num).appendChild(select);
+  select.setAttribute('class','form-check-input');
+  td.appendChild(select);
+  document.getElementById(num).appendChild(td);
 });
 
 function creatRow(element, elementValue, id, ifWord) {
@@ -49,6 +53,7 @@ function creatRow(element, elementValue, id, ifWord) {
 
 // gets the word in the a row where checkbox is checked and add the word to words array to practice the words later
 document.addEventListener('click', (e) => {
+  console.log(e.target.id);
   if (e.target.id == 'check') {
     var wordNumber = e.target.name;
     var value = document.querySelector('.word-' + wordNumber).getAttribute('value');

@@ -1,13 +1,14 @@
 body {
   text-align: center;
-  padding: 5rem;
+  padding: 3rem;
   background-color: #E4E9FD;
   background-image: -webkit-linear-gradient(60deg, #A683E3 50%, #E4E9FD 50%);
   background-position: block;
-  /* min-height: 750px; */
+  min-height: 650px;
   overflow: hidden !important;
   font-family: 'Montserrat', sans-serif;
   font-size: medium;
+  font-weight: 500;
 }
 
 h1{
@@ -15,6 +16,12 @@ h1{
   margin-bottom: 2rem;
 }
 
+
+
+
+.empty{
+  margin: 0;
+}
 .main{
   margin-bottom: 1rem;
 }
@@ -31,6 +38,7 @@ h1{
   display: block;
 }
 
+
 input{
   text-align: center;
   border-radius: 60px;
@@ -39,6 +47,14 @@ input{
   width: 250px;
 }
 
+label{
+  font-size: larger;
+  margin: 0.5rem;
+}
+
+#btn{
+  margin-top: 30px;
+}
 .btn{
   margin: 10px;
   width: 200px;
@@ -69,13 +85,28 @@ input{
   width: 40%;
 }
 
+/* ul{
+  position:relative;
+  text-align: center;
+} */
+
+
+#stats{
+  font-size:2.5ch;
+  font-weight: 550;
+}
+
+.h1-b-margin{
+  margin-bottom: 0;
+}
+
+tr{
+  background-color: #fff;
+}
 .btn:disabled {
   cursor: default;
 }
 
-.btn:focus {
-  box-shadow: rgba(50, 50, 93, .1) 0 0 0 1px inset, rgba(50, 50, 93, .2) 0 6px 15px 0, rgba(0, 0, 0, .1) 0 2px 2px 0, rgba(50, 151, 211, .3) 0 0 0 4px;
-}
 
 .exit:hover{
   background-color: #ff5252;
@@ -83,6 +114,58 @@ input{
 .play:hover{
   background-color: #63cdda;
 }
+
+table {
+  border:solid black 1px;
+}
+
+/* table scroling */
+/* #table-wrapper {
+  position:relative;
+} */
+#table-scroll {
+  height:210px;
+  overflow:auto;  
+  /* margin-top:30px; */
+}
+#table-wrapper table {
+  width:100%;
+}
+
+#table-wrapper table th .text {
+  position:absolute;   
+  top:-20px;
+  z-index:2;
+  height:20px;
+ 
+}
+
+thead{
+  margin: 0;
+  width:inherit;
+}
+
+.table{
+  margin-bottom: 0;
+}
+
+
+.disableScrooling{
+  position:fixed;
+}
+
+.g-buttons{
+  text-align: center;
+  margin-left: auto;
+    margin-right: auto;
+}
+.game-buttons{
+  background-color:#63cdda ;
+  color: black;
+  font-size: large;
+
+}
+
 /* css for the tables */
 
 /* @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap'); */
@@ -100,7 +183,7 @@ input{
 
 .wrapper {
   max-width: 450px;
-  margin: 15px auto;
+  margin: 35px auto;
 }
 
 .wrapper .search-input {

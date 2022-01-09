@@ -203,22 +203,10 @@ ipcMain.on('getWordsAmount', async (e) => {
 ipcMain.on('goToPage', async function (e, pagePath, amount) {
     switch (pagePath) {
         case 'Views/gameWindow.html':
-            // gets the number of words for the current practice 
-            // var newAmount = await pickAmount(amount).then(value => {
-            //     return value;
-            // });
-            // // If the user inserted amount that bigger then the amount of words in the db...
-            // if (newAmount < amount || newAmount == 0) {
-            //     //Shows a message to the user about the amount of words he iserted
-            //     mainWindow.webContents.send('data', newAmount);
-            //     return;
-            // } else {
-            // creats an instance of words for the current practice
             await randomWords(amount).then(() => {
                 displayWords();
             });
-            // }
-            break;
+            return;
         case 'Views/stats.html':
             mainWindow.once('ready-to-show', () => showCount());
             break;

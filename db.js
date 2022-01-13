@@ -54,25 +54,58 @@ const Game = mongoose.model("Game", gameSchema);
 const Unplayed = mongoose.model("Unplayed", unPlayedWords);
 
 // add this to the db when finish the project so this words will appear in any first start  
-// const wordOne = new Word({
-//     word: 'Dog',
-//     meaning: 'כלב',
-//     ifLearned: false
-// })
-// const wordTwo = new Word({
-//     word: 'Cat',
-//     meaning: 'חתול',
-//     ifLearned: false
-// })
-// const wordThree = new Word({
-//     word: 'Water',
-//     meaning: 'מים',
-//     ifLearned: false
-// })
 
-// wordOne.save();
-// wordTwo.save();
-// wordThree.save();
+module.exports.minWords = async function (num) {
+    count = 0;
+    if (await exports.ifWordExists(wordOne.word) == 0) {
+        await exports.addWord(wordOne);
+        count++;
+    }
+    if (count != num) {
+
+        if (await exports.ifWordExists(wordTwo.word) == 0) {
+            await exports.addWord(wordTwo);
+            count++;
+        }
+    }
+    if (count != num) {
+
+        if (await exports.ifWordExists(wordThree.word) == 0) {
+            await exports.addWord(wordThree);
+            count++;
+        }
+    }
+    if (count != num) {
+
+        if (await exports.ifWordExists(wordFour.word) == 0) {
+            await exports.addWord(wordFour);
+        }
+    }
+}
+
+
+const wordOne = new Word({
+    word: 'Music',
+    meaning: 'מוזיקה',
+    ifLearned: false
+})
+const wordTwo = new Word({
+    word: 'Coffee',
+    meaning: 'קפה',
+    ifLearned: false
+})
+const wordThree = new Word({
+    word: 'Love',
+    meaning: 'אהבה',
+    ifLearned: false
+})
+const wordFour = new Word({
+    word: 'Fun',
+    meaning: 'כיף',
+    ifLearned: false
+})
+
+
 
 
 //================================================================================
@@ -450,7 +483,7 @@ module.exports.getXwordsFromWords = async function (x, arr) {
         return res;
     });
     wordsList.forEach(word => {
-        if (words.length != x){
+        if (words.length != x) {
             if (!existingWords.includes(word.word)) {
                 words.push(word);
             }

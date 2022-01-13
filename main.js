@@ -33,7 +33,8 @@ const {
     ifLearendEnglish,
     ifLearendHebrew,
     checkEnglish,
-    checkHebrew
+    checkHebrew,
+    minWords
 } = require('./db');
 const _ = require('lodash');
 const {
@@ -89,6 +90,7 @@ function creatWindow() {
 
 //Listen to app to bee ready
 app.on('ready', function () {
+    minWordsInDb();
     creatWindow();
 
     // Load html into window
@@ -121,6 +123,18 @@ app.on('ready', function () {
     Menu.setApplicationMenu(mainMenu);
 })
 
+//!=================================================================================
+
+//add words to game - add x word if less then 4 words in db
+async function minWordsInDb() {
+    await countWords().then((amount) => {
+        console.log('current amount: ' + amount);
+        if (amount < 4)
+            minWords(4 - amount);
+    }).catch((err) => {
+        console.log(err);
+    });
+}
 
 //!=================================================================================
 
@@ -147,7 +161,7 @@ ipcMain.on('practice', async function (e, word, meaning, state) {
         if (res == 0) return true;
         return false;
     });
-    (!ifGameIsEmpty) ? await displayWords() : await finishePractice();
+    (!ifGameIsEmpty) ? await displayWords(): await finishePractice();
 })
 
 async function finishePractice() {
@@ -323,7 +337,7 @@ async function displayWords() {
         slashes: true
         // explaination of the code: Just building in a funcy way the path to page that
         // we want it to go to the path is: 'file://dirname/Views/mainWindow.html'
-    })).catch((err =>{ 
+    })).catch((err => {
         console.log(err);
     }));
 }

@@ -4,6 +4,7 @@ const {
 } = electron;
 
 var maxAmount;
+var noUnlearned = false;
 
 //Goes to addWindow on button click
 document
@@ -12,8 +13,8 @@ document
 
 function goToGameWindow(e) {
     var value = document.querySelector('.amount').value;
-    if(!value) value = maxAmount;
-    if(value > maxAmount){
+    if (!value) value = maxAmount;
+    if (value > maxAmount) {
         alert('There is only ' + maxAmount + ' words, enter number less than ' + maxAmount);
         return;
     }
@@ -46,9 +47,12 @@ function unLearned(e) {
 
 ipcRenderer.on('noUnlearned', (e) => {
     const newlabel = document.createElement('label');
-    const t = document.createTextNode('NO UNLEARNED WORDS WERE FOUND');
+    if (noUnlearned == false) {
+        var t = document.createTextNode('No Unlearned words...');
+        noUnlearned = true;
+    }
     newlabel.appendChild(t);
-    document.querySelector('.abc').insertBefore(newlabel, document.querySelector('.abc').childNodes[0]);
+    document.querySelector('body').append(newlabel);
 })
 
 window.onload = (e) => {
@@ -56,7 +60,7 @@ window.onload = (e) => {
 }
 
 
-ipcRenderer.on('data', function (e, newAmount){
+ipcRenderer.on('data', function (e, newAmount) {
     maxAmount = newAmount;
     console.log(newAmount);
     document.querySelector('.amount').setAttribute('max', newAmount);

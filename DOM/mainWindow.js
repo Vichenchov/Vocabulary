@@ -45,16 +45,3 @@ function deletePage(e) {
     ipcRenderer.send('goToPage', 'Views/deleteWords.html');
 }
 
-// ===>>> test function -> works on delete button click <<<===
-// ===>>> test function -> works on delete button click <<<===
-// ===>>> test function -> works on delete button click <<<===
-// ===>>> test function -> works on delete button click <<<===
-// ===>>> test function -> works on delete button click <<<===
-
-// document
-//     .querySelector('.delete')
-//     .addEventListener('click', test);
-
-function test(e) {
-    ipcRenderer.send('test');
-}

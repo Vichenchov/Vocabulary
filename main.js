@@ -62,7 +62,7 @@ let mainWindow;
 var amountInGameWords;
 
 // app.whenReady().then(() => {
-//     globalShortcut.register('CommandOrControl+X', () => {
+//     globalShortcut.register('CommandOrControl', () => {
 //         creatWindow();
 //         mainWindow.loadURL(url.format({
 //             pathname: path.join(__dirname, 'Views/addWindow.html'),
@@ -70,13 +70,11 @@ var amountInGameWords;
 //             slashes: true
 //         }))
 //     })
-//   })
+// })
 
 
 function creatWindow() {
     mainWindow = new BrowserWindow({
-        // idk what webPreferences do but it make it work so I need to add it to any new
-        // page
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
@@ -88,8 +86,11 @@ function creatWindow() {
     });
 }
 
-//Listen to app to bee ready
+
+
+//Listen to app to be ready
 app.on('ready', function () {
+
     minWordsInDb();
     creatWindow();
 
@@ -116,6 +117,18 @@ app.on('ready', function () {
 
 
     })
+
+
+    globalShortcut.register('CommandOrControl+D', () => {
+        console.log('Electron loves global shortcuts!')
+        mainWindow.loadURL(url.format({
+            pathname: path.join(__dirname, 'Views/addWindow.html'),
+            protocol: 'file:',
+            slashes: true
+        }));
+        mainWindow.show();
+    });
+
 
     //Build menu from template
     const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);

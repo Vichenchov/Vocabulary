@@ -104,4 +104,5 @@ document
 
 function goBack(e) {
     ipcRenderer.send('goBack');
+    ipcRenderer.send('reset');
 }

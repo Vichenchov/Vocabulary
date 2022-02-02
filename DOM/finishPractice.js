@@ -9,6 +9,7 @@ ipcRenderer.on('showAmount', function (e, amount) {
 
 document.querySelector('.more').addEventListener('click', (e) =>{
     ipcRenderer.send('goToPage', 'Views/chooseGame.html');
+    ipcRenderer.send('reset');
 })
 
 document.querySelector('.exit').addEventListener('click', (e) =>{

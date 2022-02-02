@@ -151,7 +151,7 @@ async function minWordsInDb() {
 
 //!=================================================================================
 
-var gameCurrentPracticeCount;
+var gameCurrentPracticeCount = 0;
 
 // Practice main function + runs when select buttons clicked (didn't create yet...)
 ipcMain.on('practice', async function (e, word, meaning, state) {
@@ -187,6 +187,10 @@ async function finishePractice() {
         mainWindow.webContents.send('showAmount', gameCurrentPracticeCount);
     });
 }
+
+ipcMain.on('reset', ()=>{
+    gameCurrentPracticeCount = 0;
+})
 
 
 //!=============================================================================================
@@ -470,7 +474,7 @@ async function showPracticeAmount(params) {
     var count = await countGame().then((res) => {
         return res;
     });
-    if (gameCurrentPracticeCount == null) gameCurrentPracticeCount = count;
+    if (gameCurrentPracticeCount == 0) gameCurrentPracticeCount = count;
     console.log('gameCurrentPracticeCount is ' + gameCurrentPracticeCount);
     console.log(count + " words in game db...");
     mainWindow.webContents.send('currentPracticeCount', count);

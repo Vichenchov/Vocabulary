@@ -1,20 +1,9 @@
 const mongodb = require('mongodb');
 const mongoose = require('mongoose');
-const {
-    MongoClient,
-    Db
-} = require("mongodb");
 const _ = require('lodash');
 const {
     capitalizeFirstLetter
 } = require('./extensions');
-const {
-    words,
-    xor
-} = require('lodash');
-const {
-    truncate
-} = require('original-fs');
 
 main().catch(err => console.log(err));
 
@@ -83,7 +72,6 @@ module.exports.minWords = async function (num) {
     }
 }
 
-
 const wordOne = new Word({
     word: 'Music',
     meaning: 'מוזיקה',
@@ -104,9 +92,6 @@ const wordFour = new Word({
     meaning: 'כיף',
     ifLearned: false
 })
-
-
-
 
 //================================================================================
 
@@ -132,7 +117,6 @@ module.exports.addWordToGame = async function (word) {
         if (err) console.log(err);
     });
 }
-
 
 //adds new word to the words collection
 module.exports.addWord = async function (word) {
@@ -235,8 +219,6 @@ module.exports.killGameInstance = async function () {
 module.exports.killUnplayed = async function () {
     await Unplayed.deleteMany({});
 }
-
-
 
 //checks if English - if English to Hebrew answer is correct
 // gets a word and the meaning and checkes if the answer is correct
@@ -362,13 +344,6 @@ module.exports.checkWriting = async function (wordMeaning, writing) {
                 ifLearned: true
             }
         });
-        // await Game.updateOne({
-        //     meaning: wordMeaning
-        // }, {
-        //     'result.writing': true
-        // }).catch((err) => {
-        //     console.log(err);
-        // });
     }
 }
 
@@ -492,14 +467,6 @@ module.exports.getXwordsFromWords = async function (x, arr) {
     return words;
 }
 
-//========================================================
-
-module.exports.getUnplayedWords = async function (amount, arr) {
-
-}
-
-//========================================================
-
 // gets a number and return x words from GAME db
 // ! don't chacks if there is enought words in the db
 module.exports.getXwordsFromGame = async function (x) {
@@ -520,7 +487,6 @@ module.exports.getXwordsFromGame = async function (x) {
     }
     return words;
 }
-
 
 // search the difference between words db and game db and pushes it to Unplayed db
 module.exports.differ = async function () {
@@ -604,27 +570,3 @@ module.exports.getLearned = async function () {
     });
     return words;
 }
-
-// module.exports.ifLearendHebrew = async function (word) {
-//     var ans = await Game.findOne({word: word}).then((ans) =>{
-//         if(ans.result.Hebrew == 0){
-//             return true;
-//         }else{
-//             return false;
-//         }
-//     });
-//     console.log('The Hebrew filed is: ' + ans);
-//     return ans;
-// }
-
-// module.exports.ifLearendEnglish = async function (word) {
-//     var ans = await Game.findOne({word: word}).then((ans) =>{
-//         if(ans.result.English == 0){
-//             return true;
-//         }else{
-//             return false;
-//         }
-//     });
-//     console.log('The English filed is: ' + ans);
-//     return ans;
-// }

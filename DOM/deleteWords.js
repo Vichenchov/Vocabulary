@@ -6,12 +6,6 @@ const {
 // save the selected word to delete them later
 var words = [];
 
-// gets the spacific to load every time
-// window.addEventListener('load', (e) => {
-//   console.log(rows);
-//   ipcRenderer.send('dataForSearchBar', dataLoad);
-// });
-
 // show warrning message before deleting words
 document.querySelector('.delete-btn').addEventListener('click', (e) => {
   e.preventDefault();

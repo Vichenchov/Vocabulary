@@ -4,7 +4,6 @@ const path = require('path');
 const {
 } = require('./db');
 
-
 //capitalizeFirstLetter...
 module.exports.formatWord = function (string) {
   return exports.capitalizeFirstLetter(exports.lowerCaseAllLetters(string));

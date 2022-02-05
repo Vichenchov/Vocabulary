@@ -5,11 +5,6 @@ const {
 
 var dataLoad;
 
-// gets the spacific to load every time
-// window.addEventListener('load', (e) => {
-//   ipcRenderer.send('dataForSearchBar', dataLoad);
-// });
-
 ipcRenderer.on('loadWords', function (e, word, meaning, num, data) {
     dataLoad = data;
     console.log(dataLoad);

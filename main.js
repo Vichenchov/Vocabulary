@@ -5,15 +5,11 @@ const {
     addWord,
     deleteWords,
     randomWords,
-    ifEnoughWords,
     killGameInstance,
     ifWordExists,
-    ifDeleteGameWord,
-    ifGameDbIsEmpty,
     checkWriting,
     moveUnlearnedWords,
     ifContaintUnlearned,
-    gameInstanceFromChoosenWords,
     countWords,
     countUnlearned,
     countLearned,
@@ -21,17 +17,11 @@ const {
     deleteWordsFromGame,
     getXwordsFromWords,
     getXwordsFromGame,
-    differ,
     killUnplayed,
-    getXwordsFromUnplayed,
     getAllWords,
     getLearned,
     getUnlearned,
-    countUnplayed,
     addWordToGame,
-    deleteFromGameDb,
-    ifLearendEnglish,
-    ifLearendHebrew,
     checkEnglish,
     checkHebrew,
     minWords
@@ -55,23 +45,11 @@ const {
 } = electron;
 
 //SET ENV - PROD - this line setes the project as ready to production and by that removes the DevTools from the Menu bar
-// process.env.NODE_ENV = 'production';
+process.env.NODE_ENV = 'production';
 
 let mainWindow;
 // has the value of the current amount of words in the game db - 1,2,3 are real amount -> if 4 it can be 4 words or more
 var amountInGameWords;
-
-// app.whenReady().then(() => {
-//     globalShortcut.register('CommandOrControl', () => {
-//         creatWindow();
-//         mainWindow.loadURL(url.format({
-//             pathname: path.join(__dirname, 'Views/addWindow.html'),
-//             protocol: 'file:',
-//             slashes: true
-//         }))
-//     })
-// })
-
 
 function creatWindow() {
     mainWindow = new BrowserWindow({
@@ -81,12 +59,10 @@ function creatWindow() {
             enableRemoteModule: true
         },
         resizable: false,
-        icon: 'dictionary.png'
-
+        icon: process.platform == 'darwin' ? 
+            'icons/dictionary.icns' : 'icons/dictionary.png'
     });
 }
-
-
 
 //Listen to app to be ready
 app.on('ready', function () {
@@ -103,7 +79,6 @@ app.on('ready', function () {
         // we want it to go to the path is: 'file://dirname/Views/mainWindow.html'
     }))
 
-
     // show amount of words in the db when mainWindow loaded
     mainWindow.once('ready-to-show', () => showCount())
     killGameInstance();
@@ -114,10 +89,7 @@ app.on('ready', function () {
         await killGameInstance();
         await killUnplayed();
         app.quit();
-
-
     })
-
 
     globalShortcut.register('CommandOrControl+D', () => {
         console.log('Electron loves global shortcuts!')
@@ -129,14 +101,11 @@ app.on('ready', function () {
         mainWindow.show();
     });
 
-
     //Build menu from template
     const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
     //Insert menu
     Menu.setApplicationMenu(mainMenu);
 })
-
-//!=================================================================================
 
 //add words to game - add x word if less then 4 words in db
 async function minWordsInDb() {
@@ -148,8 +117,6 @@ async function minWordsInDb() {
         console.log(err);
     });
 }
-
-//!=================================================================================
 
 var gameCurrentPracticeCount = 0;
 
@@ -188,12 +155,9 @@ async function finishePractice() {
     });
 }
 
-ipcMain.on('reset', ()=>{
+ipcMain.on('reset', () => {
     gameCurrentPracticeCount = 0;
 })
-
-
-//!=============================================================================================
 
 // save word in game db if the clicked the spacific check box on wordsSelection window
 ipcMain.on('saveInGameDb', async function (e, word) {
@@ -479,19 +443,6 @@ async function showPracticeAmount(params) {
     console.log(count + " words in game db...");
     mainWindow.webContents.send('currentPracticeCount', count);
 }
-
-// checks if there is enough words in the db as the user inserts
-// if not, returns the number of the words in the db
-// async function pickAmount(amount) {
-//     // ans is an obj with two fields - (1)boolean if Enough words - (2) - num of words in the db
-//     var ans = await ifEnoughWords(amount).then(value => {
-//         return value;
-//     });
-//     // *also if amount == '', aka 'undifined' means that the user just clicked start
-//     // *so it returns the amount of words in the db so the user starts practice all the words
-//     if (ans.result == false || amount == '') amount = ans.numOfWordsInDb;
-//     return amount;
-// }
 
 //Gets new word and inserts it to the db, also gets two more params:
 //(ifExit) gets boolean if the app should cloes after the word was saved

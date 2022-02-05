@@ -66,17 +66,3 @@ ipcRenderer.on('data', function (e, newAmount) {
     document.querySelector('.amount').setAttribute('max', newAmount);
     document.querySelector('.amount').setAttribute('placeholder', 'max words is ' + newAmount);
 })
-
-
-// ipcRenderer.on('data', function (e, newAmount) {
-//     amount = newAmount;
-//     console.log(newAmount);
-//     if (newAmount == 0) {
-//         alert('There is no words to practice, please add new words to start practicing...');
-//     } else {
-//         alert('There is only ' + newAmount + ' words were saved til now. Press start to practice all of theme or enter samller number...');
-//         document.querySelector('.amount').setAttribute('max', newAmount);
-//         var text = document.createTextNode('asdasdasd');
-//         document.querySelector('.amount').append(text);
-//     }
-// })

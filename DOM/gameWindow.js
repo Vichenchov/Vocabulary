@@ -9,7 +9,6 @@ const {
 var state;
 var gameMaxCount;
 
-
 document.addEventListener('click', function (e) {
     if (e.target.value == 'btn') {
         // console.log(document.querySelector('#inputValue').value);
